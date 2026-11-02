@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ひとこと記録帳">
+<meta name="theme-color" content="#f6f0e4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#231c15" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>ひとこと記録帳</title>
+<style>
+:root{--bg:#f6f0e4;--card:#fffaf0;--ink:#3a2e22;--sub:#7d6b57;--line:#e4d7c1;--accent:#2d5c8a;--on-accent:#fff;--star:#d99a1e;--btn:#efe5d3;--warn-bg:#fbe9d0;--warn:#8a4b12;--shadow:#e4d7c1}
+@media (prefers-color-scheme:dark){:root{--bg:#231c15;--card:#2e251c;--ink:#efe4d2;--sub:#b5a38b;--line:#4a3d2f;--accent:#7fb0e0;--on-accent:#1b1510;--star:#f0b440;--btn:#3a2f24;--warn-bg:#4a3317;--warn:#f5c58a;--shadow:#16110c}}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html{background:var(--bg);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Mincho ProN","Yu Mincho","YuMincho",serif;line-height:1.6;font-size:14px}
+img{max-width:100%}
+.ui,button,input,textarea,select{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",sans-serif}
+main{max-width:640px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px calc(48px + env(safe-area-inset-bottom))}
+/* ホーム画面アプリで開いたとき、タイトルが時計・電池の表示に重ならないよう少し下げる */
+html.standalone main{padding-top:max(calc(env(safe-area-inset-top) + 20px),64px)}
+h1{font-size:1.4rem;margin:4px 0 2px;letter-spacing:.08em}
+.lead{color:var(--sub);font-size:.85rem;margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;box-shadow:2px 2px 0 var(--shadow);padding:14px;margin-bottom:16px}
+h2{font-size:1.05rem;margin:0 0 10px;display:flex;align-items:baseline;gap:8px}
+h2 .count{font-size:.8rem;color:var(--sub);font-weight:normal}
+label.field{display:block;font-size:.8rem;color:var(--sub);margin:10px 0 4px}
+input[type=text],input[type=search],input[type=date],textarea{width:100%;font-size:16px;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+textarea{min-height:72px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--btn);color:var(--ink);border-radius:999px;padding:5px 12px;font-size:.85rem;cursor:pointer;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.stars{display:flex;gap:2px}
+.stars button{background:none;border:none;font-size:1.9rem;line-height:1;padding:2px 4px;color:var(--line);cursor:pointer}
+.stars button.on{color:var(--star)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--btn);color:var(--ink);border-radius:6px;padding:8px 14px;font-size:.9rem;cursor:pointer}
+.btn.main{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-size:1rem;padding:11px 18px;width:100%;margin-top:14px}
+.btn.small{padding:5px 10px;font-size:.8rem}
+.btn.danger{color:#b23b2b}
+.btn:disabled{opacity:.5}
+.dup{background:var(--warn-bg);color:var(--warn);border-radius:6px;padding:8px 10px;font-size:.85rem;margin-top:8px}
+.dup:empty{display:none}
+.thumbpick{display:flex;align-items:center;gap:10px}
+.thumbpick img{width:56px;height:56px;object-fit:cover;border-radius:4px;border:1px solid var(--line)}
+.list{list-style:none;margin:0;padding:0}
+.item{display:flex;gap:10px;padding:10px 0;border-top:1px dashed var(--line);cursor:pointer}
+.item:first-child{border-top:none}
+.item .ph{flex:0 0 48px;width:48px;height:64px;border-radius:4px;border:1px solid var(--line);background:var(--btn);object-fit:cover;display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:.7rem}
+.item .body{flex:1;min-width:0}
+.item .t{font-weight:bold;word-break:break-word}
+.item .meta{font-size:.78rem;color:var(--sub)}
+.item .note{font-size:.85rem;margin-top:2px;word-break:break-word}
+.item .acts{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.st{color:var(--star);letter-spacing:1px}
+.empty{color:var(--sub);font-size:.85rem;padding:6px 0}
+.filters{display:flex;flex-direction:column;gap:8px;margin-bottom:6px}
+details summary{cursor:pointer;font-weight:bold;font-size:1.05rem}
+.hint{color:var(--sub);font-size:.8rem;margin:8px 0}
+dialog{border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);padding:0;width:min(560px,calc(100vw - 24px));max-height:calc(100vh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
+dialog::backdrop{background:rgba(0,0,0,.4)}
+.dlg{padding:16px}
+.dlg .big{width:100%;max-height:50vh;object-fit:contain;border-radius:6px;border:1px solid var(--line);background:var(--bg)}
+.dlg .foot{display:flex;justify-content:space-between;gap:8px;margin-top:16px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:.85rem;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+<script>
+if(window.navigator.standalone||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches))document.documentElement.classList.add('standalone');
+</script>
+</head>
+<body>
+<main>
+  <h1>ひとこと記録帳</h1>
+  <p class="lead ui">見た作品・読んだ本を、タイトルと星だけで。</p>
+
+  <section class="card" id="formCard">
+    <h2>記録する</h2>
+    <input type="text" id="fTitle" placeholder="タイトル" autocomplete="off">
+    <div id="dup" class="dup ui"></div>
+    <label class="field ui">星</label>
+    <div class="stars" id="fStars"></div>
+    <label class="field ui">状態</label>
+    <div class="chips ui" id="fStatus"></div>
+    <label class="field ui">種類（なくても可）</label>
+    <div class="chips ui" id="fKind"></div>
+    <label class="field ui">どこで（なくても可）</label>
+    <div class="chips ui" id="fPlace"></div>
+    <label class="field ui">写真（なくても可）</label>
+    <div class="thumbpick ui"><img id="fPhotoPrev" alt="" hidden><button class="btn small" id="fPhotoBtn" type="button">写真を選ぶ</button><button class="btn small" id="fPhotoClear" type="button" hidden>外す</button></div>
+    <button class="btn main ui" id="fSave" type="button">記録する</button>
+  </section>
+
+  <section class="card">
+    <h2>途中の作品 <span class="count ui" id="cDoing"></span></h2>
+    <ul class="list" id="lDoing"></ul>
+  </section>
+
+  <section class="card">
+    <h2>見終わった作品 <span class="count ui" id="cDone"></span></h2>
+    <div class="filters ui">
+      <input type="search" id="q" placeholder="タイトル・感想で検索">
+      <div class="chips" id="kFilter"></div>
+    </div>
+    <ul class="list" id="lDone"></ul>
+  </section>
+
+  <section class="card">
+    <details id="archive">
+      <summary>アーカイブ（途中でやめた作品） <span class="count ui" id="cDrop"></span></summary>
+      <ul class="list" id="lDrop" style="margin-top:8px"></ul>
+    </details>
+  </section>
+
+  <section class="card">
+    <details>
+      <summary>バックアップ</summary>
+      <p class="hint ui">記録はこの端末の中だけに保存されています。機種変更のときや念のために、ファイルに書き出しておけます。</p>
+      <div class="row ui"><button class="btn" id="bExport" type="button">書き出す</button><button class="btn" id="bImport" type="button">読み込む</button></div>
+      <p class="hint ui">読み込むと、今の記録はすべて置き換えられます。</p>
+    </details>
+  </section>
+</main>
+
+<dialog id="dlg"><div class="dlg">
+  <h2>作品の記録</h2>
+  <img id="dPhoto" class="big" alt="" hidden>
+  <div class="row ui" style="margin-top:8px"><button class="btn small" id="dPhotoBtn" type="button">写真を追加</button><button class="btn small danger" id="dPhotoDel" type="button" hidden>写真を削除</button></div>
+  <label class="field ui">タイトル</label><input type="text" id="dTitle">
+  <label class="field ui">星</label><div class="stars" id="dStars"></div>
+  <label class="field ui">状態</label><div class="chips ui" id="dStatus"></div>
+  <label class="field ui">日付</label><input type="date" id="dDate">
+  <label class="field ui">種類</label><div class="chips ui" id="dKind"></div>
+  <label class="field ui">どこで</label><div class="chips ui" id="dPlace"></div>
+  <label class="field ui">ひとこと感想</label><textarea id="dNote"></textarea>
+  <div class="foot ui"><button class="btn danger" id="dDel" type="button">この記録を削除</button><span class="row"><button class="btn" id="dClose" type="button">閉じる</button><button class="btn" id="dSave" type="button" style="background:var(--accent);color:var(--on-accent);border-color:var(--accent)">保存</button></span></div>
+</div></dialog>
+<input type="file" id="file" accept="image/*" hidden>
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+<div class="toast ui" id="toast"></div>
+
+<script>
+const KINDS=["本","映画","ドラマ","漫画","アニメ","その他"];
+const PLACES=["ABEMA","Amazonプライム","映画館","Netflix","Hulu","本","その他"];
+const STATUS={doing:"途中",done:"見終わった",dropped:"途中でやめた"};
+const $=id=>document.getElementById(id);
+let works=[],editing=null,photoTarget=null;
+const form={stars:0,status:"done",kind:"",place:"",photo:null};
+const dlgState={stars:0,status:"done",kind:"",place:"",photoId:"",newPhoto:null,removePhoto:false};
+
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const fmtDate=s=>s?s.replace(/^(\d+)-0?(\d+)-0?(\d+)$/,"$1/$2/$3"):"";
+const norm=s=>(s||"").normalize("NFKC").toLowerCase().replace(/[\s・、。,.!！?？「」『』（）()\-ー〜~]/g,"").replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("show"),1800)}
+
+/* ---------- 保存（この端末の中） ----------
+   記録の一覧は localStorage、写真は IndexedDB に入れる */
+const LS_KEY="hitokotoKiroku.works";
+function loadWorks(){try{const a=JSON.parse(localStorage.getItem(LS_KEY)||"[]");return Array.isArray(a)?a:[]}catch(e){return[]}}
+function saveWorks(){localStorage.setItem(LS_KEY,JSON.stringify(works))}
+let idbP=null;
+function idb(){return idbP||(idbP=new Promise((ok,ng)=>{const r=indexedDB.open("hitokotoKirokuPhotos",1);r.onupgradeneeded=()=>r.result.createObjectStore("photos");r.onsuccess=()=>ok(r.result);r.onerror=()=>ng(r.error)}))}
+function idbDo(mode,fn){return idb().then(d=>new Promise((ok,ng)=>{const tx=d.transaction("photos",mode);const r=fn(tx.objectStore("photos"));tx.oncomplete=()=>ok(r&&r.result);tx.onerror=()=>ng(tx.error);tx.onabort=()=>ng(tx.error)}))}
+const photoPut=(id,blob)=>idbDo("readwrite",s=>{s.put(blob,id)});
+const photoGet=id=>idbDo("readonly",s=>s.get(id));
+const photoDel=id=>idbDo("readwrite",s=>{s.delete(id)});
+const photoClearAll=()=>idbDo("readwrite",s=>{s.clear()});
+const urlCache=new Map();
+async function photoUrl(id){if(!id)return"";if(urlCache.has(id))return urlCache.get(id);try{const b=await photoGet(id);if(!b)return"";const u=URL.createObjectURL(b);urlCache.set(id,u);return u}catch(e){return""}}
+function dropUrl(id){const u=urlCache.get(id);if(u){URL.revokeObjectURL(u);urlCache.delete(id)}}
+
+function stars(el,get,set){el.innerHTML="";for(let i=1;i<=5;i++){const b=document.createElement("button");b.type="button";b.textContent="★";b.setAttribute("aria-label","星"+i);b.onclick=()=>{set(get()===i?0:i);paint()};el.appendChild(b)}
+  function paint(){[...el.children].forEach((b,i)=>b.classList.toggle("on",i<get()))}paint();return paint}
+function chips(el,list,get,set,allowNone=true){el.innerHTML="";list.forEach(([v,l])=>{const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=l;b.onclick=()=>{set(allowNone&&get()===v?"":v);paint()};el.appendChild(b)});
+  function paint(){[...el.children].forEach((b,i)=>b.setAttribute("aria-pressed",String(list[i][0]===get())))}paint();return paint}
+const pairs=a=>a.map(x=>[x,x]);
+const statusPairs=[["doing","途中"],["done","見終わった"]];
+const dlgStatusPairs=Object.entries(STATUS);
+
+// 記録の欄
+const paintFStars=stars($("fStars"),()=>form.stars,v=>form.stars=v);
+const paintFStatus=chips($("fStatus"),statusPairs,()=>form.status,v=>form.status=v,false);
+const paintFKind=chips($("fKind"),pairs(KINDS),()=>form.kind,v=>form.kind=v);
+const paintFPlace=chips($("fPlace"),pairs(PLACES),()=>form.place,v=>form.place=v);
+let kFilter="";
+chips($("kFilter"),[["","すべて"],...pairs(KINDS)],()=>kFilter,v=>{kFilter=v;render()},false);
+
+$("fTitle").addEventListener("input",checkDup);
+function checkDup(){const q=norm($("fTitle").value);const box=$("dup");box.innerHTML="";if(q.length<2)return;
+  const hits=works.filter(w=>{const n=norm(w.title);return n.includes(q)||(n.length>=2&&q.includes(n))}).slice(0,3);
+  hits.forEach(w=>{const d=document.createElement("div");d.textContent="もう記録があります: "+w.title+"（"+[fmtDate(w.date),w.stars?"★"+w.stars:"",STATUS[w.status]].filter(Boolean).join(" ")+"）";box.appendChild(d)})}
+
+// 写真: iPhoneの大きい写真は縮めてから保存する
+async function shrink(file){try{const url=URL.createObjectURL(file);const img=await new Promise((ok,ng)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=ng;i.src=url});
+  const max=1200,r=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));const c=document.createElement("canvas");c.width=Math.round(img.naturalWidth*r);c.height=Math.round(img.naturalHeight*r);
+  c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);return await new Promise(ok=>c.toBlob(b=>ok(b||file),"image/jpeg",.85))}catch(e){return file}}
+async function storePhoto(file){const id=newId();await photoPut(id,await shrink(file));return id}
+async function dropPhoto(id){if(!id)return;dropUrl(id);try{await photoDel(id)}catch(e){}}
+
+$("fPhotoBtn").onclick=()=>{photoTarget="form";$("file").click()};
+$("fPhotoClear").onclick=()=>{form.photo=null;showFormPhoto()};
+function showFormPhoto(){const p=$("fPhotoPrev");if(form.photo){p.src=URL.createObjectURL(form.photo);p.hidden=false;$("fPhotoClear").hidden=false;$("fPhotoBtn").textContent="写真を変える"}else{p.hidden=true;p.removeAttribute("src");$("fPhotoClear").hidden=true;$("fPhotoBtn").textContent="写真を選ぶ"}}
+$("file").onchange=()=>{const f=$("file").files[0];$("file").value="";if(!f)return;
+  if(photoTarget==="form"){form.photo=f;showFormPhoto()}else{dlgState.newPhoto=f;dlgState.removePhoto=false;showDlgPhoto()}};
+
+$("fSave").onclick=async()=>{const title=$("fTitle").value.trim();if(!title){toast("タイトルを入れてください");$("fTitle").focus();return}
+  const btn=$("fSave");btn.disabled=true;btn.textContent="保存中…";
+  try{const doc={id:newId(),title,stars:form.stars,status:form.status,kind:form.kind,place:form.place,note:"",date:today(),createdAt:Date.now(),photoId:""};
+    if(form.photo)doc.photoId=await storePhoto(form.photo);
+    works.push(doc);saveWorks();render();
+    $("fTitle").value="";Object.assign(form,{stars:0,status:"done",kind:"",place:"",photo:null});paintFStars();paintFStatus();paintFKind();paintFPlace();showFormPhoto();checkDup();toast("記録しました")}
+  catch(e){toast("保存できませんでした: "+(e.message||e))}
+  finally{btn.disabled=false;btn.textContent="記録する"}};
+
+// 一覧
+function itemEl(w,acts){const li=document.createElement("li");li.className="item";
+  let ph;if(w.photoId){ph=document.createElement("img");ph.alt="";photoUrl(w.photoId).then(u=>{if(u)ph.src=u})}else{ph=document.createElement("div");ph.textContent=w.kind||"―"}ph.className="ph";li.appendChild(ph);
+  const b=document.createElement("div");b.className="body";
+  const t=document.createElement("div");t.className="t";t.textContent=w.title;b.appendChild(t);
+  const m=document.createElement("div");m.className="meta ui";const st=w.stars?"<span class=st>"+"★".repeat(w.stars)+"</span> ":"";
+  m.innerHTML=st;m.append([fmtDate(w.date),w.kind,w.place].filter(Boolean).join("・"));b.appendChild(m);
+  if(w.note){const n=document.createElement("div");n.className="note";n.textContent=w.note;b.appendChild(n)}
+  if(acts){const a=document.createElement("div");a.className="acts ui";acts.forEach(([l,s])=>{const x=document.createElement("button");x.className="btn small";x.type="button";x.textContent=l;x.onclick=e=>{e.stopPropagation();setWorkStatus(w,s)};a.appendChild(x)});b.appendChild(a)}
+  li.appendChild(b);li.onclick=()=>openDlg(w);return li}
+function fill(el,arr,acts,emptyMsg){el.innerHTML="";if(!arr.length){const e=document.createElement("li");e.className="empty ui";e.textContent=emptyMsg;el.appendChild(e);return}arr.forEach(w=>el.appendChild(itemEl(w,acts)))}
+const byDate=(a,b)=>(b.date||"").localeCompare(a.date||"")||(b.createdAt||0)-(a.createdAt||0);
+function render(){const doing=works.filter(w=>w.status==="doing").sort(byDate),drop=works.filter(w=>w.status==="dropped").sort(byDate);
+  const q=norm($("q").value);let done=works.filter(w=>w.status==="done").sort(byDate);const doneAll=done.length;
+  if(kFilter)done=done.filter(w=>w.kind===kFilter);if(q)done=done.filter(w=>norm(w.title+w.note).includes(q));
+  $("cDoing").textContent=doing.length+"件";$("cDone").textContent=(done.length===doneAll?"":done.length+" / ")+doneAll+"件";$("cDrop").textContent=drop.length+"件";
+  fill($("lDoing"),doing,[["見終わった","done"],["途中でやめる","dropped"]],"途中の作品はありません");
+  fill($("lDone"),done,null,doneAll?"当てはまる作品がありません":"まだ記録がありません");
+  fill($("lDrop"),drop,[["途中に戻す","doing"]],"途中でやめた作品はありません");checkDup()}
+$("q").addEventListener("input",render);
+
+function setWorkStatus(w,s){try{Object.assign(w,{status:s,date:today()});saveWorks();render();toast(STATUS[s]+"に移しました")}catch(e){toast("変更できませんでした")}}
+
+// 詳しく見る・直す
+const paintDStars=stars($("dStars"),()=>dlgState.stars,v=>dlgState.stars=v);
+const paintDStatus=chips($("dStatus"),dlgStatusPairs,()=>dlgState.status,v=>dlgState.status=v,false);
+const paintDKind=chips($("dKind"),pairs(KINDS),()=>dlgState.kind,v=>dlgState.kind=v);
+const paintDPlace=chips($("dPlace"),pairs(PLACES),()=>dlgState.place,v=>dlgState.place=v);
+async function showDlgPhoto(){const p=$("dPhoto");let src="";if(dlgState.newPhoto)src=URL.createObjectURL(dlgState.newPhoto);else if(!dlgState.removePhoto&&dlgState.photoId)src=await photoUrl(dlgState.photoId);
+  if(src){p.src=src;p.hidden=false;$("dPhotoDel").hidden=false;$("dPhotoBtn").textContent="写真を差し替え"}else{p.hidden=true;p.removeAttribute("src");$("dPhotoDel").hidden=true;$("dPhotoBtn").textContent="写真を追加"}}
+function openDlg(w){editing=w;Object.assign(dlgState,{stars:w.stars||0,status:w.status||"done",kind:w.kind||"",place:w.place||"",photoId:w.photoId||"",newPhoto:null,removePhoto:false});
+  $("dTitle").value=w.title;$("dDate").value=w.date||"";$("dNote").value=w.note||"";paintDStars();paintDStatus();paintDKind();paintDPlace();showDlgPhoto();$("dlg").showModal()}
+$("dClose").onclick=()=>$("dlg").close();
+$("dPhotoBtn").onclick=()=>{photoTarget="dlg";$("file").click()};
+$("dPhotoDel").onclick=()=>{dlgState.newPhoto=null;dlgState.removePhoto=true;showDlgPhoto()};
+$("dSave").onclick=async()=>{const title=$("dTitle").value.trim();if(!title){toast("タイトルを入れてください");return}
+  const btn=$("dSave");btn.disabled=true;btn.textContent="保存中…";
+  try{const upd={title,stars:dlgState.stars,status:dlgState.status,kind:dlgState.kind,place:dlgState.place,date:$("dDate").value||today(),note:$("dNote").value.trim()};
+    const old=dlgState.photoId;
+    if(dlgState.newPhoto)upd.photoId=await storePhoto(dlgState.newPhoto);else if(dlgState.removePhoto)upd.photoId="";
+    Object.assign(editing,upd);saveWorks();
+    if(old&&(dlgState.newPhoto||dlgState.removePhoto))await dropPhoto(old);
+    render();$("dlg").close();toast("保存しました")}
+  catch(e){toast("保存できませんでした: "+(e.message||e))}
+  finally{btn.disabled=false;btn.textContent="保存"}};
+$("dDel").onclick=async()=>{if(!editing)return;const b=$("dDel");if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent="もう一度押すと削除";setTimeout(()=>{b.dataset.armed="";b.textContent="この記録を削除"},3000);return}
+  b.dataset.armed="";b.textContent="この記録を削除";
+  try{works=works.filter(w=>w!==editing);saveWorks();await dropPhoto(editing.photoId);render();$("dlg").close();toast("削除しました")}catch(e){toast("削除できませんでした")}};
+
+// バックアップ（書き出し・読み込み）
+const blobToDataURL=b=>new Promise((ok,ng)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>ng(r.error);r.readAsDataURL(b)});
+$("bExport").onclick=async()=>{try{const photos={};for(const w of works){if(w.photoId){const b=await photoGet(w.photoId);if(b)photos[w.photoId]=await blobToDataURL(b)}}
+    const blob=new Blob([JSON.stringify({app:"hitokoto-kiroku",version:1,exportedAt:new Date().toISOString(),works,photos})],{type:"application/json"});
+    const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="hitokoto-kiroku-"+today()+".json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);toast("書き出しました")}
+  catch(e){toast("書き出せませんでした")}};
+$("bImport").onclick=()=>$("importFile").click();
+$("importFile").onchange=async()=>{const f=$("importFile").files[0];$("importFile").value="";if(!f)return;
+  try{const data=JSON.parse(await f.text());if(data.app!=="hitokoto-kiroku"||!Array.isArray(data.works))throw new Error("ひとこと記録帳のデータではありません");
+    if(!confirm("今の記録（"+works.length+"件）はすべて置き換えられます。読み込みますか？"))return;
+    await photoClearAll();for(const u of urlCache.values())URL.revokeObjectURL(u);urlCache.clear();
+    for(const [id,d] of Object.entries(data.photos||{}))await photoPut(id,await (await fetch(d)).blob());
+    works=data.works;saveWorks();render();toast("読み込みました")}
+  catch(e){toast("読み込めませんでした: "+e.message)}};
+
+works=loadWorks();render();
+// ブラウザの判断で記録が消されにくくする
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+</script>
+</body>
+</html>
