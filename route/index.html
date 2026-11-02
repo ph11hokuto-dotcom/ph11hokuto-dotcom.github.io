@@ -36,11 +36,13 @@
     background-attachment: fixed;
     font-family: -apple-system, BlinkMacSystemFont, "Hiragino Maru Gothic ProN", "Hiragino Sans", "Noto Sans JP", sans-serif;
     font-size: 16px;
-    padding: calc(16px + env(safe-area-inset-top)) 16px calc(12px + env(safe-area-inset-bottom));
+    padding: calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
+    /* 中身を上下のまん中に置く（収まらないときは上から並ぶ） */
+    display: flex; flex-direction: column;
     color: var(--text);
     -webkit-text-size-adjust: 100%;
   }
-  .wrap { max-width: 460px; margin: 0 auto; }
+  .wrap { width: 100%; max-width: 460px; margin: auto; }
   header { margin-bottom: 12px; }
   .app-title { font-weight: 800; font-size: 1.6rem; margin: 0 0 4px; }
   .app-sub { font-size: .85rem; color: var(--text-muted); line-height: 1.6; margin: 0; font-variant-numeric: tabular-nums; }
@@ -64,14 +66,14 @@
     padding: 9px 18px; border-radius: 999px; background: var(--surface); color: var(--accent); border: 2px solid var(--accent);
   }
   /* 画面に収まりきらないときだけ、余白とすき間をさらに詰める（文字の大きさは変えない） */
-  body.compact { padding-top: calc(8px + env(safe-area-inset-top)); padding-bottom: calc(4px + env(safe-area-inset-bottom)); }
+  body.compact { padding-top: calc(8px + env(safe-area-inset-top)); padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
   body.compact header { margin-bottom: 8px; }
   body.compact .list { gap: 7px; }
   body.compact .card { padding: 9px 18px 8px; gap: 1px; }
   body.compact footer { margin-top: 6px; }
-  /* ホーム画面のアプリで開いたときは、時計・電池の表示（とその下のぼかし）を避けて下げる */
-  html.standalone body { padding-top: max(calc(env(safe-area-inset-top) + 28px), 76px); }
-  html.standalone body.compact { padding-top: max(calc(env(safe-area-inset-top) + 20px), 68px); }
+  /* ホーム画面のアプリで開いたときは、上下の余白を少し広めにとる（上のぼかしを避ける） */
+  html.standalone body { padding-top: calc(28px + env(safe-area-inset-top)); padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
+  html.standalone body.compact { padding-top: calc(12px + env(safe-area-inset-top)); padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
   /* それでも収まらないときは、いちばん下の説明文（AI確認の補足）だけ隠す */
   body.tight footer { display: none; }
   footer { margin-top: 10px; font-size: .78rem; color: var(--text-muted); line-height: 1.7; text-align: center; }
