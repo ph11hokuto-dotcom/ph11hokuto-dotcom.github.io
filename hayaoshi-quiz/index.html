@@ -1,0 +1,1196 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="早押しクイズ">
+<meta name="theme-color" content="#0b1a3a">
+<link rel="icon" href="apple-touch-icon.png?v=2">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
+<title>ベタ問早押しクイズ</title>
+<style>html{background:#0b1a3a}body{background-repeat:no-repeat!important}:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}*,*::before,*::after{box-sizing:inherit}body{margin:0}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DotGothic16&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap">
+<style>
+/* Layout: クイズ番組のスタジオ。上に電光掲示板の問題文、その真下に大きな早押しボタン。別タブで問題と答えの一覧 */
+:root{
+  --stage:#0b1a3a;
+  --stage-2:#13285a;
+  --board:#050c1f;
+  --led:#ffd65a;
+  --ink:#eef3ff;
+  --muted:#93a4cc;
+  --buzz:#e6262f;
+  --buzz-dark:#8f1016;
+  --ok:#ff4d5e;
+  --ng:#5aa8ff;
+  --line:#2a4280;
+  --easy:#6fd3a0;
+  --normal:#ffd65a;
+  --hard:#ff8a5c;
+  --f-display:"Dela Gothic One","Hiragino Kaku Gothic StdN","Yu Gothic",sans-serif;
+  --f-board:"DotGothic16","MS Gothic",monospace;
+  --f-body:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{
+  background:radial-gradient(120% 80% at 50% 0%,var(--stage-2),var(--stage) 60%);
+  background-color:var(--stage);
+  color:var(--ink);font-family:var(--f-body);font-size:16px;
+  padding:0 16px;
+}
+.wrap{max-width:860px;margin:0 auto;padding-block:20px 40px;display:flex;flex-direction:column;gap:18px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--f-display);font-weight:400;font-size:clamp(22px,5vw,30px);margin:0;letter-spacing:.04em}
+h1 small{display:block;font-family:var(--f-body);font-size:12px;color:var(--muted);letter-spacing:.12em;font-weight:500}
+.tabs{display:flex;gap:4px;background:rgba(5,12,31,.6);border:1px solid var(--line);border-radius:999px;padding:4px}
+.tab{font:inherit;font-weight:700;font-size:14px;border:0;border-radius:999px;padding:8px 16px;background:none;color:var(--muted);cursor:pointer;white-space:nowrap}
+.tab[aria-selected="true"]{background:var(--led);color:var(--board)}
+.tab:focus-visible{outline:3px solid var(--led);outline-offset:2px}
+
+/* 難易度の切り替え（クイズと一覧で共通） */
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{
+  font:inherit;font-weight:700;font-size:14px;padding:7px 14px;border-radius:8px;cursor:pointer;white-space:nowrap;
+  border:2px solid var(--line);background:var(--board);color:var(--muted);
+}
+.seg button .n{font-weight:500;font-size:12px;margin-left:4px;opacity:.8}
+.seg button[aria-pressed="true"][data-level="easy"]{border-color:var(--easy);color:var(--easy)}
+.seg button[aria-pressed="true"][data-level="normal"]{border-color:var(--normal);color:var(--normal)}
+.seg button[aria-pressed="true"][data-level="hard"]{border-color:var(--hard);color:var(--hard)}
+.seg button:focus-visible{outline:3px solid var(--led);outline-offset:2px}
+.setup{display:flex;gap:14px 20px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
+.setup .group{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+select{font:inherit;font-size:14px;background:var(--board);color:var(--ink);border:2px solid var(--line);border-radius:8px;padding:6px 8px}
+
+.score{display:flex;gap:8px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.chip{border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:14px;white-space:nowrap;background:rgba(5,12,31,.5)}
+.chip b{font-family:var(--f-display);font-weight:400;font-size:16px;margin-left:4px}
+.chip.ok b{color:var(--ok)}.chip.ng b{color:var(--ng)}
+
+.board{
+  background:var(--board);border:3px solid var(--line);border-radius:14px;
+  padding:16px 18px 20px;min-height:200px;position:relative;
+  box-shadow:inset 0 0 40px rgba(0,0,0,.6),0 10px 30px rgba(0,0,0,.35);
+}
+.board-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;font-size:13px;color:var(--muted);letter-spacing:.1em}
+.qno{font-family:var(--f-display);color:var(--led);font-size:18px;letter-spacing:.06em}
+.genre{border:1px solid var(--line);border-radius:4px;padding:2px 8px;white-space:nowrap}
+.qtext{
+  font-family:var(--f-board);color:var(--led);font-size:clamp(20px,4.6vw,28px);line-height:1.7;
+  text-shadow:0 0 8px rgba(255,214,90,.45);min-height:3.4em;overflow-wrap:anywhere;
+}
+.qtext .rest{color:rgba(255,214,90,.22);text-shadow:none}
+.cursor{display:inline-block;width:.55em;height:1em;background:var(--led);vertical-align:-.12em;margin-left:2px;animation:blink 1s steps(1) infinite}
+.stopped .cursor{display:none}
+@keyframes blink{50%{opacity:0}}
+
+.mark{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;
+  font-family:var(--f-display);font-size:min(46vw,240px);line-height:1;opacity:0;transform:scale(.6);
+  transition:opacity .18s,transform .25s cubic-bezier(.2,1.6,.4,1);
+}
+.mark.show{opacity:.92;transform:scale(1)}
+.mark.ok{color:var(--ok);text-shadow:0 0 30px rgba(255,77,94,.6)}
+.mark.ng{color:var(--ng);text-shadow:0 0 30px rgba(90,168,255,.6)}
+
+.console{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
+.buzzer{
+  width:150px;height:150px;border-radius:50%;border:0;cursor:pointer;
+  background:radial-gradient(circle at 38% 32%,#ff7a80,var(--buzz) 45%,var(--buzz-dark));
+  box-shadow:0 10px 0 #5a0a0e,0 16px 24px rgba(0,0,0,.5);
+  color:#fff;font-family:var(--f-display);font-size:24px;letter-spacing:.06em;
+  transition:transform .06s,box-shadow .06s,filter .2s;
+}
+.buzzer:active:not(:disabled),.buzzer.pressed{transform:translateY(8px);box-shadow:0 2px 0 #5a0a0e,0 6px 12px rgba(0,0,0,.5)}
+.buzzer.go{
+  background:radial-gradient(circle at 38% 32%,#8fc4ff,#2f7de1 45%,#164a9a);
+  box-shadow:0 10px 0 #0c2c63,0 16px 24px rgba(0,0,0,.5);font-size:20px;
+}
+.buzzer.go:active:not(:disabled),.buzzer.go.pressed{box-shadow:0 2px 0 #0c2c63,0 6px 12px rgba(0,0,0,.5)}
+.buzzer:disabled{filter:grayscale(.8) brightness(.6);cursor:default}
+.buzzer.locked{cursor:wait}
+.buzzer:focus-visible{outline:4px solid var(--led);outline-offset:6px}
+.buzzer small{display:block;font-family:var(--f-body);font-size:11px;font-weight:500;opacity:.85;margin-top:4px}
+
+.side{display:flex;flex-direction:column;gap:10px;min-width:0}
+.status{font-size:15px;color:var(--muted);min-height:1.5em}
+.status strong{color:var(--ink)}
+.answer-row{display:flex;gap:8px}
+#answer{
+  flex:1;min-width:0;font:inherit;font-size:18px;padding:12px 14px;border-radius:10px;
+  border:2px solid var(--line);background:var(--board);color:var(--ink);
+}
+#answer:focus{outline:none;border-color:var(--led)}
+#answer:disabled{opacity:.45}
+.btn{
+  font:inherit;font-weight:700;font-size:15px;padding:12px 18px;border-radius:10px;cursor:pointer;
+  border:2px solid var(--line);background:var(--stage-2);color:var(--ink);white-space:nowrap;
+}
+.btn:hover:not(:disabled){border-color:var(--led)}
+.btn:focus-visible{outline:3px solid var(--led);outline-offset:2px}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.primary{background:var(--led);color:var(--board);border-color:var(--led)}
+.result{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:rgba(5,12,31,.55);font-size:15px;line-height:1.6}
+.result .ans{font-family:var(--f-display);font-weight:400;font-size:20px;color:var(--led)}
+.result .yours{color:var(--muted);font-size:13px}
+.result .fix{margin-top:6px;background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0;font:inherit;font-size:13px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.controls .speed{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-left:auto}
+.help{font-size:12px;color:var(--muted);line-height:1.7;margin:0}
+kbd{font-family:var(--f-body);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:11px}
+
+/* ふたりで対戦：画面を上下に分け、上半分は向かいの人向けに180度回す。1画面に収め、上下に動かせないようにする */
+html.duel-lock,html.duel-lock body{overflow:hidden;overscroll-behavior:none;position:fixed;width:100%;height:100%}
+.duel-open{padding:7px 14px;font-size:14px;border-color:var(--led);color:var(--led);background:var(--board)}
+.duel{
+  position:fixed;top:0;left:0;right:0;height:100dvh;z-index:20;background:var(--stage);
+  display:grid;grid-template-rows:minmax(0,1fr) auto minmax(0,1fr);
+  max-width:560px;margin:0 auto;overflow:hidden;overscroll-behavior:none;
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;
+}
+.duel input{-webkit-user-select:text;user-select:text}
+.half{display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:6px;padding:8px 12px;min-height:0;overflow:hidden}
+.half.top{transform:rotate(180deg);padding-top:calc(8px + env(safe-area-inset-bottom,0px))}
+.half.p0{--me:#5aa8ff;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+.half.p1{--me:#ff9a52}
+.h-top{display:flex;align-items:center;gap:8px;font-size:12px;line-height:1.35;color:var(--muted)}
+.h-name{font-family:var(--f-display);color:var(--me);font-size:14px;white-space:nowrap}
+.h-status{flex:1;min-width:0}
+.half.answering .h-top{display:none}
+.h-status strong{color:var(--ink)}
+.h-score{font-variant-numeric:tabular-nums;white-space:nowrap;border:1px solid var(--line);border-radius:999px;padding:1px 9px}
+.h-score b{font-family:var(--f-display);font-weight:400;font-size:14px}
+.h-score .s0{color:#5aa8ff}.h-score .s1{color:#ff9a52}
+.h-top{grid-row:1}
+.h-main{grid-row:2}
+.h-ans{grid-row:3}
+.h-main{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;min-height:0}
+.h-board{
+  position:relative;min-width:0;min-height:0;background:var(--board);border:2px solid var(--line);border-radius:12px;overflow:hidden;
+}
+/* 問題文と答えは、枠に対して位置を決める（高さの計算に頼らない） */
+.h-q{position:absolute;left:10px;right:10px;top:8px;bottom:36px;overflow:hidden;font-family:var(--f-board);color:var(--led);font-size:20px;line-height:1.45;text-shadow:0 0 8px rgba(255,214,90,.4);overflow-wrap:anywhere}
+.h-q .rest{color:rgba(255,214,90,.22);text-shadow:none}
+.h-q.scroll{overflow-y:auto}
+.h-a{position:absolute;left:10px;right:10px;bottom:6px;min-height:1.5em;font-size:14px;line-height:1.5;color:var(--ink)}
+.h-a .ans{font-family:var(--f-display);font-weight:400;font-size:17px;color:var(--led)}
+.h-board .mark{inset:0 0 36px 0;font-size:var(--mk,110px);line-height:1}
+.h-board.judged .h-q{opacity:.22}
+.h-btnrow{width:88px;display:flex;align-items:center;justify-content:center;min-height:0}
+.h-btnrow.off{display:none}
+.dbuzz{width:var(--bz,80px);height:var(--bz,80px);flex:none;font-size:18px;padding:0;
+  box-shadow:0 6px 0 #5a0a0e,0 10px 16px rgba(0,0,0,.5)}
+.half .dbuzz{width:var(--bz,80px);height:var(--bz,80px)}
+.dbuzz.go{font-size:15px;box-shadow:0 6px 0 #0c2c63,0 10px 16px rgba(0,0,0,.5)}
+.dbuzz:active:not(:disabled),.dbuzz.pressed{transform:translateY(5px);box-shadow:0 1px 0 #5a0a0e,0 4px 8px rgba(0,0,0,.5)}
+.dbuzz:disabled{filter:grayscale(.85) brightness(.55)}
+.h-ans form{display:flex;gap:6px}
+.h-ans form[hidden]{display:none}
+.h-ans input{flex:1;min-width:0;font:inherit;font-size:16px;padding:7px 12px;border-radius:10px;border:2px solid var(--me);background:var(--board);color:var(--ink)}
+.h-ans input:focus{outline:none;box-shadow:0 0 0 3px rgba(255,214,90,.5)}
+.h-ans input[readonly]{caret-color:transparent}
+.h-kb{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:3px;margin-top:6px}
+.h-kb[hidden]{display:none}
+.h-kb button{height:var(--kh,32px);padding:0;min-width:0;border-radius:7px;border:1px solid var(--line);background:var(--stage-2);color:var(--ink);font:inherit;font-weight:700;font-size:16px;touch-action:manipulation;cursor:pointer}
+.h-kb button:active{background:var(--me);color:var(--board)}
+.h-kb .sp{visibility:hidden}
+.h-kb .w2{grid-column:span 2}
+.h-kb .w4{grid-column:span 4}
+.h-kb .fn{font-size:14px;color:var(--led)}
+.h-kb .go{background:var(--led);color:var(--board);border-color:var(--led);font-size:15px}
+.duel.ans0{grid-template-rows:minmax(0,.55fr) auto minmax(0,1.45fr)}
+.duel.ans1{grid-template-rows:minmax(0,1.45fr) auto minmax(0,.55fr)}
+@media (max-height:640px){.h-kb{--kh:28px}}
+.mid{display:flex;align-items:center;justify-content:center;gap:8px;padding:5px 12px;border-block:1px solid var(--line);background:var(--stage-2);font-size:12px;color:var(--muted);flex-wrap:nowrap}
+.mid b{font-family:var(--f-display);font-weight:400;color:var(--led);font-size:14px;white-space:nowrap}
+.mid #dGenre{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
+.mid .btn{padding:4px 10px;font-size:12px;border-radius:8px}
+.mid .log{display:none}
+
+/* 一覧 */
+.list-tools{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+#search{flex:1 1 200px;min-width:0;max-width:320px;font:inherit;font-size:15px;padding:8px 12px;border-radius:8px;border:2px solid var(--line);background:var(--board);color:var(--ink)}
+#search:focus{outline:none;border-color:var(--led)}
+.check{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);cursor:pointer;white-space:nowrap}
+.check input{width:18px;height:18px;accent-color:var(--led)}
+.count{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.qlist{border:2px solid var(--line);border-radius:12px;overflow:hidden;background:rgba(5,12,31,.55)}
+.qrow{display:grid;grid-template-columns:3em 5.5em minmax(0,1fr) 12em;gap:12px;align-items:baseline;padding:10px 14px;border-top:1px solid rgba(42,66,128,.6);font-size:15px;line-height:1.6}
+.qrow:first-child{border-top:0}
+.qrow.head{background:var(--stage-2);font-size:12px;color:var(--muted);letter-spacing:.1em;font-weight:700;padding-block:8px}
+.qrow .no{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;white-space:nowrap}
+.qrow .g{font-size:12px;color:var(--muted);white-space:nowrap}
+.qrow .q,.qrow .a{text-wrap:balance;overflow-wrap:anywhere;min-width:0}
+.qrow .a b{font-weight:700;color:var(--led)}
+.qrow .a small{display:block;font-size:12px;color:var(--muted);line-height:1.5}
+.hide-ans .qrow:not(.head) .a{cursor:pointer}
+.hide-ans .qrow:not(.head):not(.open) .a > *{filter:blur(7px);user-select:none}
+.empty{padding:24px 14px;color:var(--muted);font-size:14px}
+
+@media (max-width:640px){
+  .qrow{grid-template-columns:auto 1fr;gap:4px 10px}
+  .qrow.head{display:none}
+  .qrow .q,.qrow .a{grid-column:1 / -1}
+  .qrow .g{justify-self:end}
+}
+@media (max-width:540px){
+  .console{grid-template-columns:1fr;justify-items:center}
+  .side{width:100%}
+  .buzzer{width:132px;height:132px}
+  .controls .speed{margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){
+  .cursor{animation:none}.mark{transition:none}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1><small>HAYAOSHI QUIZ</small>ベタ問早押しクイズ</h1>
+    <nav class="tabs" role="tablist" aria-label="ページ切り替え">
+      <button class="tab" id="tabQuiz" role="tab" aria-selected="true" type="button">クイズ</button>
+      <button class="tab" id="tabList" role="tab" aria-selected="false" type="button">問題と答えの一覧</button>
+    </nav>
+  </header>
+
+  <!-- クイズ -->
+  <main id="viewQuiz" class="wrap" style="padding:0">
+    <div class="setup">
+      <div class="group">難易度
+        <div class="seg" id="quizLevel" role="group" aria-label="クイズの難易度">
+          <button type="button" data-level="easy" aria-pressed="true">初級</button>
+          <button type="button" data-level="normal" aria-pressed="false">中級</button>
+          <button type="button" data-level="hard" aria-pressed="false">上級</button>
+        </div>
+      </div>
+      <label class="group" for="countSel">問題数
+        <select id="countSel">
+          <option value="10" selected>10問</option>
+          <option value="20">20問</option>
+          <option value="50">50問</option>
+          <option value="100">100問（全問）</option>
+        </select>
+      </label>
+      <button class="btn duel-open" id="duelOpen" type="button">ふたりで対戦</button>
+      <div class="score" aria-live="polite">
+        <span class="chip ok">正解<b id="sOk">0</b></span>
+        <span class="chip ng">不正解<b id="sNg">0</b></span>
+        <span class="chip">残り<b id="sLeft">0</b></span>
+      </div>
+    </div>
+
+    <section class="board" id="board" aria-label="問題">
+      <div class="board-head">
+        <span class="qno" id="qno">第1問</span>
+        <span class="genre" id="genre">-</span>
+      </div>
+      <div class="qtext" id="qtext" aria-live="off"></div>
+      <div class="mark" id="mark" aria-hidden="true"></div>
+    </section>
+
+    <section class="console">
+      <button class="buzzer go" id="buzz" type="button"><span id="buzzLabel">スタート</span><small>Space / Enter</small></button>
+      <div class="side">
+        <div class="status" id="status">難易度と問題数を選んで、青いボタン（スタート）を押してください。</div>
+        <form class="answer-row" id="form" autocomplete="off">
+          <input id="answer" type="text" placeholder="ボタンを押すと入力できます" disabled aria-label="回答">
+          <button class="btn primary" id="send" type="submit" disabled>回答</button>
+        </form>
+        <div class="result" id="result" hidden></div>
+      </div>
+    </section>
+
+    <div class="controls">
+      <button class="btn" id="skip" type="button" disabled>答えを見る</button>
+      <button class="btn" id="restart" type="button">最初から</button>
+      <label class="speed" for="speedSel">読む速さ
+        <select id="speedSel">
+          <option value="220">ゆっくり</option>
+          <option value="140" selected>ふつう</option>
+          <option value="80">はやい</option>
+        </select>
+      </label>
+    </div>
+    <p class="help">大きなボタン1つで「スタート」「早押し」「次の問題」を切り替えます。青のときは進む、赤のときは早押しです。<kbd>Space</kbd> か <kbd>Enter</kbd> でも押せます（回答欄では <kbd>Enter</kbd> が回答の送信）。押し間違いを防ぐため、判定のあとや問題が流れ始めた直後は約0.5秒だけボタンが反応しません。難易度や問題数を変えると、その設定で最初からになります。「ふたりで対戦」を押すと、スマホ1台を向かい合わせで使う対戦画面になります（上半分は向かいの人向けに逆さま表示）。ひらがな・カタカナ・漢字のどれで答えても判定します。</p>
+  </main>
+
+  <!-- 一覧 -->
+  <section id="viewList" class="wrap" style="padding:0" hidden aria-label="問題と答えの一覧">
+    <div class="list-tools">
+      <div class="seg" id="listLevel" role="group" aria-label="一覧の難易度">
+        <button type="button" data-level="easy" aria-pressed="true">初級<span class="n"></span></button>
+        <button type="button" data-level="normal" aria-pressed="false">中級<span class="n"></span></button>
+        <button type="button" data-level="hard" aria-pressed="false">上級<span class="n"></span></button>
+      </div>
+      <input id="search" type="search" placeholder="問題・答え・ジャンルで検索" aria-label="一覧を検索">
+      <label class="check" for="hideAns"><input id="hideAns" type="checkbox">答えを隠す</label>
+      <span class="count" id="listCount"></span>
+    </div>
+    <div class="qlist" id="qlist"></div>
+    <p class="help">「答えを隠す」にすると答えがぼかされ、押した行だけ答えが見えます。小さい字は、正解として受け付ける別の書き方です。</p>
+  </section>
+</div>
+
+<!-- ふたりで対戦（上＝向かいの人、下＝手前の人） -->
+<div class="duel" id="duel" hidden aria-label="ふたりで対戦">
+  <div class="half top p1" id="halfB" aria-label="向かいの人の画面"></div>
+  <div class="mid">
+    <b id="dNo">第1問</b><span id="dGenre">-</span>
+    <button class="btn" id="dSkip" type="button" disabled>スルー</button>
+    <button class="btn" id="dClose" type="button">やめる</button>
+    <span class="log" id="dLog" aria-live="polite"></span>
+  </div>
+  <div class="half p0" id="halfA" aria-label="手前の人の画面"></div>
+</div>
+
+<script>
+// 早押しクイズの問題データ（[ジャンル, 問題文, 正解, 別解（|区切り）]）
+const QUESTION_SETS = {
+easy: [
+["地理","日本の首都はどこでしょう？","東京","東京都|とうきょう"],
+["地理","日本で一番高い山は何でしょう？","富士山","ふじさん|富士"],
+["地理","日本で一番大きい湖は何でしょう？","琵琶湖","びわこ"],
+["地理","日本で一番長い川は何でしょう？","信濃川","しなのがわ"],
+["地理","47都道府県のうち、面積が最も大きいのはどこでしょう？","北海道","ほっかいどう"],
+["地理","47都道府県のうち、面積が最も小さいのはどこでしょう？","香川県","香川|かがわ|かがわけん"],
+["地理","「通天閣」や「道頓堀」で知られる、近畿地方の府はどこでしょう？","大阪府","大阪|おおさか|おおさかふ"],
+["地理","「金閣寺」や「清水寺」がある府はどこでしょう？","京都府","京都|きょうと|きょうとふ"],
+["地理","「奈良の大仏」がある寺は何でしょう？","東大寺","とうだいじ"],
+["地理","日本を構成する主な4つの島のうち、最も大きい島は何でしょう？","本州","ほんしゅう"],
+["地理","東京スカイツリーの高さは何メートルでしょう？","634メートル","634|634m"],
+["地理","世界で一番面積が大きい国はどこでしょう？","ロシア","ロシア連邦"],
+["地理","世界で一番高い山は何でしょう？","エベレスト","チョモランマ|サガルマータ|エヴェレスト"],
+["地理","地球上で最も広い海洋は何でしょう？","太平洋","たいへいよう"],
+["地理","エッフェル塔がある都市はどこでしょう？","パリ",""],
+["地理","「自由の女神像」がある、アメリカの都市はどこでしょう？","ニューヨーク","NY"],
+["地理","ピラミッドやスフィンクスで有名な、アフリカ北東部の国はどこでしょう？","エジプト",""],
+["地理","カンガルーやコアラが生息する、南半球の国はどこでしょう？","オーストラリア",""],
+["地理","「万里の長城」がある国はどこでしょう？","中国","中華人民共和国|ちゅうごく"],
+["理科","水が凍り始める温度は、1気圧でセ氏何度でしょう？","0度","0|0℃|れいど|ぜろど"],
+["理科","水が沸騰する温度は、1気圧でセ氏何度でしょう？","100度","100|100℃|ひゃくど"],
+["理科","元素記号「H」で表される元素は何でしょう？","水素","すいそ"],
+["理科","元素記号「O」で表される元素は何でしょう？","酸素","さんそ"],
+["理科","元素記号「Au」で表される元素は何でしょう？","金","きん|ゴールド"],
+["理科","植物が光のエネルギーを使って、二酸化炭素と水からデンプンなどを作るはたらきを何というでしょう？","光合成","こうごうせい"],
+["理科","太陽系の惑星の中で、最も大きいものは何でしょう？","木星","もくせい|ジュピター"],
+["理科","太陽系の惑星の中で、太陽に最も近いものは何でしょう？","水星","すいせい|マーキュリー"],
+["理科","太陽系で、地球のすぐ外側を回っている惑星は何でしょう？","火星","かせい|マーズ"],
+["理科","地球のまわりを回る、地球ただ一つの衛星は何でしょう？","月","つき"],
+["理科","昆虫の脚は全部で何本でしょう？","6本","6|ろっぽん"],
+["理科","クモの脚は全部で何本でしょう？","8本","8|はっぽん"],
+["理科","光の三原色といえば、赤・緑と何色でしょう？","青","あお|ブルー"],
+["理科","虹の7色のうち、一番外側に見える色は何色でしょう？","赤","あか|レッド"],
+["理科","全身に血液を送り出すポンプの役目をする臓器は何でしょう？","心臓","しんぞう"],
+["理科","1年のうち、北半球で昼の長さが最も長くなる日を、二十四節気で何というでしょう？","夏至","げし"],
+["理科","1年のうち、北半球で昼の長さが最も短くなる日を、二十四節気で何というでしょう？","冬至","とうじ"],
+["理科","磁石のN極と引き合うのは何極でしょう？","S極","S|えすきょく"],
+["理科","酸性の水溶液につけると、青色のリトマス紙は何色に変わるでしょう？","赤","赤色|あか|あかいろ"],
+["文学","「吾輩は猫である。名前はまだ無い」という書き出しで始まる小説の作者は誰でしょう？","夏目漱石","なつめそうせき|漱石"],
+["文学","親友セリヌンティウスのために走る若者を描いた『走れメロス』の作者は誰でしょう？","太宰治","だざいおさむ|太宰"],
+["文学","『アンパンマン』の生みの親として知られる、漫画家・絵本作家は誰でしょう？","やなせたかし","やなせ|柳瀬嵩"],
+["文学","未来から来たネコ型ロボットが活躍する漫画『ドラえもん』の作者は誰でしょう？","藤子・F・不二雄","藤子不二雄|藤子F不二雄|ふじこふじお|ふじこえふふじお"],
+["文学","昔話で、桃太郎が鬼退治に向かった島は何という島でしょう？","鬼ヶ島","鬼が島|鬼ケ島|おにがしま"],
+["文学","昔話で、浦島太郎が助けた生き物は何でしょう？","カメ","亀|かめ"],
+["文学","童話『シンデレラ』で、シンデレラが舞踏会に残していったものは何でしょう？","ガラスの靴","ガラスのくつ|靴|くつ"],
+["歴史","1885年に日本の初代内閣総理大臣に就任した人物は誰でしょう？","伊藤博文","いとうひろぶみ"],
+["歴史","1603年に征夷大将軍となり、江戸幕府を開いた人物は誰でしょう？","徳川家康","とくがわいえやす|家康"],
+["歴史","「冠位十二階」や「十七条の憲法」を定めたとされる人物は誰でしょう？","聖徳太子","しょうとくたいし|厩戸王|厩戸皇子|うまやとおう"],
+["歴史","1600年に起きた「天下分け目の戦い」と呼ばれる合戦は何でしょう？","関ヶ原の戦い","関ケ原の戦い|関ヶ原|関ケ原|せきがはらのたたかい|せきがはら"],
+["歴史","アメリカ合衆国の初代大統領は誰でしょう？","ジョージ・ワシントン","ワシントン"],
+["歴史","「鳴くよウグイス平安京」の語呂合わせで覚える、平安京への遷都は西暦何年でしょう？","794年","794"],
+["歴史","鎌倉幕府を開いた人物は誰でしょう？","源頼朝","みなもとのよりとも|頼朝"],
+["歴史","1582年の「本能寺の変」で、織田信長を討った武将は誰でしょう？","明智光秀","あけちみつひで|光秀"],
+["芸術","スペイン内戦中の空爆を題材にした大作『ゲルニカ』を描いた画家は誰でしょう？","ピカソ","パブロピカソ"],
+["芸術","『モナ・リザ』を描いたイタリアの芸術家は誰でしょう？","レオナルド・ダ・ヴィンチ","ダヴィンチ|ダビンチ|レオナルドダビンチ|レオナルド"],
+["芸術","『ひまわり』の連作で知られる、オランダ出身の画家は誰でしょう？","ゴッホ","ファンゴッホ|ヴィンセントファンゴッホ"],
+["音楽","「運命」の通称で知られる交響曲第5番を作曲したのは誰でしょう？","ベートーヴェン","ベートーベン"],
+["音楽","一般的なピアノの鍵盤は、白鍵と黒鍵を合わせて全部で何鍵でしょう？","88鍵","88|はちじゅうはち"],
+["音楽","「ドレミの歌」「エーデルワイス」などの名曲が登場する、トラップ一家を描いたミュージカル映画は何でしょう？","サウンド・オブ・ミュージック","サウンドオブミュージック"],
+["漢字","漢字で「海月」と書く生き物は何でしょう？","クラゲ","くらげ"],
+["漢字","漢字で「河豚」と書く魚は何でしょう？","フグ","ふぐ"],
+["漢字","漢字で「秋刀魚」と書く魚は何でしょう？","サンマ","さんま"],
+["漢字","漢字で「海老」と書く生き物は何でしょう？","エビ","えび"],
+["漢字","漢字で「烏賊」と書く生き物は何でしょう？","イカ","いか"],
+["漢字","漢字で「蛸」と書く生き物は何でしょう？","タコ","たこ"],
+["漢字","漢字で「蜜柑」と書く果物は何でしょう？","ミカン","みかん"],
+["漢字","漢字で「苺」と書く果物は何でしょう？","イチゴ","いちご"],
+["漢字","漢字で「向日葵」と書く花は何でしょう？","ヒマワリ","ひまわり"],
+["雑学","うるう年ではない年、1年は何日あるでしょう？","365日","365"],
+["雑学","日本の国鳥に指定されている鳥は何でしょう？","キジ","きじ|雉"],
+["雑学","日本の国花とされる花といえば、桜と何でしょう？","菊","きく|キク"],
+["雑学","日本の1円硬貨1枚の重さは何グラムでしょう？","1グラム","1|1g|いちぐらむ"],
+["雑学","オリンピックの五輪マークで、上の段の真ん中にある輪は何色でしょう？","黒","くろ|ブラック"],
+["雑学","世界三大珍味といえば、キャビア、フォアグラと何でしょう？","トリュフ","トリフ"],
+["雑学","十二支で、最初にくる動物は何でしょう？","ネズミ","子|ね|鼠|ねずみ"],
+["雑学","十二支で、最後にくる動物は何でしょう？","イノシシ","亥|い|猪|いのしし"],
+["雑学","鉛筆などの数え方で「1ダース」はいくつでしょう？","12","12個|12本|じゅうに"],
+["雑学","織姫と彦星が年に一度会うとされる「七夕」は何月何日でしょう？","7月7日","7/7|しちがつなのか"],
+["雑学","女の子の健やかな成長を願う「ひな祭り」は何月何日でしょう？","3月3日","3/3|さんがつみっか"],
+["雑学","トランプのカードは、ジョーカーを除くと全部で何枚でしょう？","52枚","52"],
+["生活","日本の硬貨のうち、真ん中に穴が開いているのは5円玉と何円玉でしょう？","50円玉","50円|50|ごじゅうえん"],
+["生活","2024年に発行が始まった新しい一万円札の肖像は誰でしょう？","渋沢栄一","しぶさわえいいち|澁澤榮一"],
+["生活","2024年に発行が始まった新しい五千円札の肖像は誰でしょう？","津田梅子","つだうめこ"],
+["生活","2024年に発行が始まった新しい千円札の肖像は誰でしょう？","北里柴三郎","きたさとしばさぶろう"],
+["スポーツ","サッカーで、1チームが同時にフィールドに出られる選手は、ゴールキーパーを含めて何人でしょう？","11人","11|じゅういちにん"],
+["スポーツ","野球で、守備につく1チームの選手は何人でしょう？","9人","9|きゅうにん|くにん"],
+["スポーツ","バスケットボールで、1チームが同時にコートに出られる選手は何人でしょう？","5人","5|ごにん"],
+["スポーツ","大相撲で、力士の最高位を何というでしょう？","横綱","よこづな"],
+["スポーツ","夏季オリンピックは、原則として何年に1度開かれるでしょう？","4年","4|よねん"],
+["スポーツ","フルマラソンの距離は何キロメートルでしょう？","42.195キロメートル","42.195|42.195km|42.195キロ"],
+["スポーツ","ボウリングで、1ゲームの最高得点は何点でしょう？","300点","300"],
+["スポーツ","テニスで、得点が0点であることを何というでしょう？","ラブ","love"],
+["ゲーム","将棋の駒のうち、成ることができないのは王将（玉将）と何でしょう？","金将","金|きん|きんしょう"],
+["ゲーム","囲碁で使う石の色は、白と何色でしょう？","黒","くろ"],
+["ゲーム","将棋で、次に相手の王（玉）を取れる状態にする手を何というでしょう？","王手","おうて"],
+["ゲーム","トランプで、「K」の札が表す人物は何でしょう？","キング","王|おう|king"],
+["食","寿司屋で「ガリ」と呼ばれるのは、何の甘酢漬けでしょう？","ショウガ","生姜|しょうが|新生姜"],
+["食","寿司屋で「シャリ」と呼ばれるのは何でしょう？","酢飯","すめし|ご飯|ごはん|米|こめ"],
+["食","「キムチ」はどこの国を代表する漬物でしょう？","韓国","大韓民国|かんこく|朝鮮"],
+["食","ビールの主な原料となる穀物は何でしょう？","大麦","麦|むぎ|おおむぎ|麦芽|モルト"]
+],
+normal: [
+["地理","日本で一番高い山は富士山ですが、2番目に高い山はどこでしょう？","北岳","きただけ"],
+["地理","世界で一番面積が大きい国はロシアですが、2番目に大きい国はどこでしょう？","カナダ",""],
+["地理","日本で一番大きい湖は琵琶湖ですが、2番目に大きい湖はどこでしょう？","霞ヶ浦","霞ケ浦|かすみがうら"],
+["地理","全長が約6650kmで、一般に世界最長とされるアフリカの川は何でしょう？","ナイル川","ナイル|ないるがわ"],
+["地理","世界で一番面積が小さい国はどこでしょう？","バチカン","バチカン市国"],
+["地理","オーストラリアの首都はどこでしょう？","キャンベラ",""],
+["地理","カナダの首都はどこでしょう？","オタワ",""],
+["地理","ブラジルの首都はどこでしょう？","ブラジリア",""],
+["地理","トルコの首都はどこでしょう？","アンカラ",""],
+["地理","オーストラリア大陸を除くと、世界で一番大きい島はどこでしょう？","グリーンランド",""],
+["地理","アフリカ大陸の北部に広がる、世界最大級の砂漠は何でしょう？","サハラ砂漠","サハラ"],
+["地理","東京都に属する、日本の最南端の島は何でしょう？","沖ノ鳥島","おきのとりしま"],
+["地理","東京都に属する、日本の最東端の島は何でしょう？","南鳥島","みなみとりしま"],
+["地理","沖縄県に属する、日本の最西端の島は何でしょう？","与那国島","与那国|よなぐにじま"],
+["地理","海に面していない内陸県のうち、関東地方にあるのは栃木県・群馬県とどこでしょう？","埼玉県","埼玉|さいたま|さいたまけん"],
+["地理","「日本三景」といえば、松島・天橋立と何でしょう？","宮島","厳島|安芸の宮島|みやじま|いつくしま"],
+["地理","「日本三名園」といえば、金沢の兼六園・岡山の後楽園と、水戸にある何でしょう？","偕楽園","かいらくえん"],
+["地理","世界で最も深い湖として知られる、ロシアの湖は何でしょう？","バイカル湖","バイカル"],
+["地理","アルプス山脈の最高峰は何でしょう？","モンブラン",""],
+["地理","南アメリカ大陸の最高峰は何でしょう？","アコンカグア",""],
+["理科","元素記号「Fe」で表される元素は何でしょう？","鉄","てつ"],
+["理科","元素記号「Ag」で表される元素は何でしょう？","銀","ぎん"],
+["理科","元素記号「Na」で表される元素は何でしょう？","ナトリウム",""],
+["理科","元素記号「K」で表される元素は何でしょう？","カリウム",""],
+["理科","1869年に元素の周期表を発表した、ロシアの化学者は誰でしょう？","メンデレーエフ","メンデレエフ|メンデレーフ"],
+["理科","水溶液の酸性・アルカリ性の度合いを表す、水素イオン指数を表す記号は何でしょう？","pH","ピーエイチ|ペーハー"],
+["理科","乾燥した空気に、体積の割合で最も多く含まれる気体は何でしょう？","窒素","ちっそ|N2"],
+["理科","ドライアイスは、何という物質を固体にしたものでしょう？","二酸化炭素","CO2|炭酸ガス|にさんかたんそ"],
+["理科","1気圧のもとで、水の密度が最も大きくなるのはおよそセ氏何度でしょう？","4度","4|4℃|よんど"],
+["理科","著書『種の起源』で進化論を唱えた、イギリスの博物学者は誰でしょう？","ダーウィン","チャールズダーウィン|ダーウイン"],
+["理科","「万有引力の法則」を発見したことで知られる、イギリスの科学者は誰でしょう？","ニュートン","アイザックニュートン"],
+["理科","相対性理論を提唱した物理学者は誰でしょう？","アインシュタイン","アルベルトアインシュタイン"],
+["理科","アオカビから抗生物質ペニシリンを発見した、イギリスの細菌学者は誰でしょう？","フレミング","アレクサンダーフレミング"],
+["理科","ラジウムとポロニウムを発見し、ノーベル賞を2度受賞した女性科学者は誰でしょう？","キュリー夫人","マリーキュリー|マリキュリー|キュリー|マリー・キュリー"],
+["理科","人体で最も大きな骨は何でしょう？","大腿骨","だいたいこつ"],
+["理科","赤血球に含まれ、酸素を運ぶはたらきをする赤い色素は何でしょう？","ヘモグロビン",""],
+["理科","胃液に含まれ、たんぱく質を分解する消化酵素は何でしょう？","ペプシン",""],
+["理科","だ液に含まれ、デンプンを分解する消化酵素は何でしょう？","アミラーゼ","プチアリン"],
+["理科","遺伝情報を担う、二重らせん構造の物質「デオキシリボ核酸」の略称は何でしょう？","DNA","ディーエヌエー"],
+["理科","太陽系の惑星の中で、太陽から最も遠いものは何でしょう？","海王星","かいおうせい|ネプチューン"],
+["理科","地震そのものの規模（エネルギーの大きさ）を表す尺度は何でしょう？","マグニチュード","M"],
+["文学","夏目漱石の小説『坊っちゃん』の舞台となった、現在の県はどこでしょう？","愛媛県","愛媛|えひめ|えひめけん"],
+["文学","『ハムレット』『マクベス』などの四大悲劇を書いた、イギリスの劇作家は誰でしょう？","シェイクスピア","シェークスピア"],
+["文学","現存する日本最古の和歌集は何でしょう？","万葉集","萬葉集|まんようしゅう"],
+["文学","平安時代に書かれた長編物語『源氏物語』の作者は誰でしょう？","紫式部","むらさきしきぶ"],
+["文学","「春はあけぼの」で始まる随筆の作者は誰でしょう？","清少納言","せいしょうなごん"],
+["文学","「祇園精舎の鐘の声、諸行無常の響きあり」で始まる軍記物語は何でしょう？","平家物語","へいけものがたり"],
+["文学","「月日は百代の過客にして」で始まる、松尾芭蕉の紀行文は何でしょう？","おくのほそ道","奥の細道|奥のほそ道|おくのほそみち"],
+["文学","『羅生門』『蜘蛛の糸』などの作品で知られる作家は誰でしょう？","芥川龍之介","芥川竜之介|あくたがわりゅうのすけ|芥川"],
+["文学","「国境の長いトンネルを抜けると雪国であった」で始まる小説の作者は誰でしょう？","川端康成","かわばたやすなり"],
+["文学","『銀河鉄道の夜』『注文の多い料理店』の作者は誰でしょう？","宮沢賢治","宮澤賢治|みやざわけんじ"],
+["文学","名探偵シャーロック・ホームズを生んだ、イギリスの作家は誰でしょう？","コナン・ドイル","コナンドイル|アーサーコナンドイル|ドイル"],
+["文学","名探偵エルキュール・ポアロを生んだ、イギリスの作家は誰でしょう？","アガサ・クリスティー","アガサクリスティ|アガサクリスティー|クリスティ|クリスティー"],
+["文学","『星の王子さま』の作者で、飛行士でもあったフランスの作家は誰でしょう？","サン＝テグジュペリ","サンテグジュペリ|テグジュペリ"],
+["歴史","1853年に黒船を率いて浦賀に来航した、アメリカの提督は誰でしょう？","ペリー","マシューペリー"],
+["歴史","645年、中大兄皇子らが蘇我入鹿を討った事件を何というでしょう？","乙巳の変","いっしのへん"],
+["歴史","1867年に大政奉還を行った、江戸幕府最後の将軍は誰でしょう？","徳川慶喜","とくがわよしのぶ|慶喜"],
+["歴史","「生類憐みの令」を出した、江戸幕府第5代将軍は誰でしょう？","徳川綱吉","とくがわつなよし|綱吉"],
+["歴史","「享保の改革」を行った、江戸幕府第8代将軍は誰でしょう？","徳川吉宗","とくがわよしむね|吉宗"],
+["歴史","坂本龍馬らの仲介で、1866年に薩摩藩と長州藩が結んだ同盟は何でしょう？","薩長同盟","薩長連合|さっちょうどうめい"],
+["歴史","『解体新書』を翻訳・出版した中心人物といえば、杉田玄白と誰でしょう？","前野良沢","まえのりょうたく"],
+["歴史","江戸時代に全国を測量し、正確な日本地図を作った人物は誰でしょう？","伊能忠敬","いのうただたか"],
+["歴史","1789年、フランス革命の発端として民衆が襲撃したパリの牢獄は何でしょう？","バスティーユ牢獄","バスティーユ|バスティーユ監獄"],
+["歴史","1492年にアメリカ大陸近くの島に到達した航海者は誰でしょう？","コロンブス","クリストファーコロンブス"],
+["芸術","『叫び』を描いた、ノルウェーの画家は誰でしょう？","ムンク","エドヴァルドムンク"],
+["芸術","ブロンズ像『考える人』を制作した、フランスの彫刻家は誰でしょう？","ロダン","オーギュストロダン"],
+["芸術","『睡蓮』の連作で知られる、フランス印象派の画家は誰でしょう？","モネ","クロードモネ"],
+["芸術","『富嶽三十六景』を描いた浮世絵師は誰でしょう？","葛飾北斎","北斎|かつしかほくさい"],
+["芸術","『東海道五十三次』を描いた浮世絵師は誰でしょう？","歌川広重","安藤広重|広重|うたがわひろしげ"],
+["芸術","『見返り美人図』を描いた、江戸時代の絵師は誰でしょう？","菱川師宣","ひしかわもろのぶ"],
+["音楽","「交響曲の父」と呼ばれる、オーストリアの作曲家は誰でしょう？","ハイドン",""],
+["音楽","「音楽の父」と呼ばれる、ドイツの作曲家は誰でしょう？","バッハ","ヨハンセバスティアンバッハ|JSバッハ"],
+["音楽","オペラ『魔笛』『フィガロの結婚』を作曲したのは誰でしょう？","モーツァルト","モーツアルト"],
+["音楽","「ピアノの詩人」と呼ばれる、ポーランド出身の作曲家は誰でしょう？","ショパン",""],
+["漢字","漢字で「土竜」と書く動物は何でしょう？","モグラ","もぐら"],
+["漢字","漢字で「河馬」と書く動物は何でしょう？","カバ","かば"],
+["漢字","漢字で「海豹」と書く動物は何でしょう？","アザラシ","あざらし"],
+["漢字","漢字で「蝸牛」と書く生き物は何でしょう？","カタツムリ","かたつむり|でんでんむし|まいまい|かぎゅう"],
+["漢字","漢字で「紫陽花」と書く花は何でしょう？","アジサイ","あじさい"],
+["漢字","漢字で「秋桜」と書く花は何でしょう？","コスモス","こすもす"],
+["雑学","結婚25周年を祝う記念日を、何婚式というでしょう？","銀婚式","銀|ぎんこんしき"],
+["雑学","結婚50周年を祝う記念日を、何婚式というでしょう？","金婚式","金|きんこんしき"],
+["雑学","生まれた年の干支に戻ることを祝う「還暦」は、満年齢で何歳のお祝いでしょう？","60歳","60|ろくじゅっさい"],
+["雑学","77歳の長寿のお祝いを何というでしょう？","喜寿","きじゅ"],
+["雑学","88歳の長寿のお祝いを何というでしょう？","米寿","べいじゅ"],
+["雑学","99歳の長寿のお祝いを何というでしょう？","白寿","はくじゅ"],
+["スポーツ","大相撲の本場所は、1年に何回開かれるでしょう？","6回","6|ろっかい"],
+["スポーツ","ゴルフで、規定打数より1打少なくホールアウトすることを何というでしょう？","バーディー","バーディ"],
+["スポーツ","ゴルフで、規定打数より2打少なくホールアウトすることを何というでしょう？","イーグル",""],
+["スポーツ","ボウリングで、1投目で10本のピンをすべて倒すことを何というでしょう？","ストライク",""],
+["スポーツ","1896年に第1回近代オリンピックが開かれた都市はどこでしょう？","アテネ",""],
+["スポーツ","「近代オリンピックの父」と呼ばれる、フランスの人物は誰でしょう？","クーベルタン","ピエールドクーベルタン"],
+["ゲーム","麻雀で、親が最初に配られた14枚の牌だけで和了ることを何というでしょう？","天和","テンホー|てんほう|てんほー"],
+["ゲーム","麻雀で、萬子・筒子・索子のうち1種類の数牌だけで手を作る役を何というでしょう？","清一色","チンイーソー|チンイツ|ちんいつ"],
+["食","「キャビア」は、主に何という魚の卵でしょう？","チョウザメ","蝶鮫|ちょうざめ"],
+["食","「からすみ」は、主に何という魚の卵巣を塩漬けにして干したものでしょう？","ボラ","鯔|ぼら"],
+["食","「イクラ」は、主に何という魚の卵でしょう？","サケ","鮭|シャケ|さけ|しゃけ"],
+["食","エビやレモングラスを使った、酸味と辛みのあるタイのスープは何でしょう？","トムヤムクン","トムヤム"],
+["食","米粉で作った平たい麺を使う、ベトナムの代表的な麺料理は何でしょう？","フォー",""],
+["食","ビールに苦みと香りを与える、アサ科のつる性植物は何でしょう？","ホップ",""]
+],
+hard: [
+["理科","ABO式血液型を発見した、オーストリア出身の病理学者は誰でしょう？","ランドシュタイナー",""],
+["理科","「質量保存の法則」を発見した、フランスの化学者は誰でしょう？","ラボアジエ","ラヴォアジエ|ラボアジェ"],
+["理科","「定比例の法則」を発見した、フランスの化学者は誰でしょう？","プルースト",""],
+["理科","「同温・同圧・同体積の気体は、同数の分子を含む」という仮説を唱えた、イタリアの科学者は誰でしょう？","アボガドロ","アヴォガドロ"],
+["理科","19世紀初めに原子説を唱えた、イギリスの化学者は誰でしょう？","ドルトン","ダルトン|ジョンドルトン"],
+["理科","温度が一定のとき、一定量の気体の体積は圧力に反比例するという法則を何というでしょう？","ボイルの法則","ボイル"],
+["理科","圧力が一定のとき、一定量の気体の体積は絶対温度に比例するという法則を何というでしょう？","シャルルの法則","シャルル"],
+["理科","窒素と水素から、鉄を主成分とする触媒を用いてアンモニアを工業的に合成する方法を何というでしょう？","ハーバー・ボッシュ法","ハーバーボッシュ法|ハーバー法|ハーバーボッシュ"],
+["理科","酸化バナジウム(V)を触媒に用いて、硫酸を工業的に製造する方法を何というでしょう？","接触法","せっしょくほう"],
+["理科","アンモニアを酸化して、硝酸を工業的に製造する方法を何というでしょう？","オストワルト法","オストワルト"],
+["理科","アンモニアソーダ法とも呼ばれる、炭酸ナトリウムの工業的製法を何というでしょう？","ソルベー法","ソルベイ法|ソルベー"],
+["理科","周期表の18族に属する、ヘリウムやネオンなどの元素をまとめて何というでしょう？","貴ガス","希ガス|きがす"],
+["理科","周期表の17族に属する、フッ素や塩素などの元素をまとめて何というでしょう？","ハロゲン",""],
+["理科","常温・常圧で液体である、ただ一つの金属元素は何でしょう？","水銀","すいぎん|Hg"],
+["理科","地殻に含まれる元素で、質量の割合が最も大きいものは何でしょう？","酸素","さんそ|O"],
+["理科","地殻に含まれる金属元素で、質量の割合が最も大きいものは何でしょう？","アルミニウム","Al"],
+["理科","ダイヤモンドと黒鉛のように、同じ元素からなるが性質の異なる単体どうしを何というでしょう？","同素体","どうそたい"],
+["理科","ビタミンCの化学物質としての名前は何でしょう？","アスコルビン酸","Lアスコルビン酸|あすこるびんさん"],
+["理科","ビタミンB1が不足すると起こる、足のむくみやしびれなどを症状とする病気は何でしょう？","脚気","かっけ"],
+["理科","米ぬかから脚気に効く成分を取り出し「オリザニン」と名付けた農芸化学者は誰でしょう？","鈴木梅太郎","すずきうめたろう"],
+["理科","1949年、日本人として初めてノーベル賞を受賞した物理学者は誰でしょう？","湯川秀樹","ゆかわひでき"],
+["理科","2019年、リチウムイオン電池の開発でノーベル化学賞を受賞した日本人は誰でしょう？","吉野彰","よしのあきら"],
+["理科","2000年、導電性高分子の発見と開発でノーベル化学賞を受賞した日本人は誰でしょう？","白川英樹","しらかわひでき"],
+["理科","2012年、iPS細胞の作製でノーベル生理学・医学賞を受賞した日本人は誰でしょう？","山中伸弥","やまなかしんや"],
+["理科","細胞の中で、呼吸によって有機物からエネルギーを取り出す細胞小器官は何でしょう？","ミトコンドリア",""],
+["理科","火星にある、太陽系最大級の火山は何でしょう？","オリンポス山","オリンポス"],
+["理科","新月から満月に向かう途中、右半分が光って見える半月を何というでしょう？","上弦の月","上弦|じょうげん|じょうげんのつき"],
+["理科","冥王星が惑星から外され、準惑星に分類されたのは西暦何年でしょう？","2006年","2006"],
+["地理","エベレストに次いで、世界で2番目に高い山は何でしょう？","K2","ケーツー|ゴッドウィンオースティン|チョゴリ"],
+["地理","流域面積が世界最大である、南アメリカの川は何でしょう？","アマゾン川","アマゾン"],
+["地理","宗谷岬がある、日本最北端の市はどこでしょう？","稚内市","稚内|わっかない"],
+["地理","水深423.4mで、日本で最も深い湖は何でしょう？","田沢湖","たざわこ"],
+["地理","日本で流域面積が最も大きい川は何でしょう？","利根川","とねがわ"],
+["地理","面積が世界最大の湖で、ロシアやイランなどに囲まれているのは何でしょう？","カスピ海","カスピ"],
+["地理","アフリカ大陸の最高峰は何でしょう？","キリマンジャロ",""],
+["地理","モンゴルの首都はどこでしょう？","ウランバートル",""],
+["地理","ペルーのアンデス山中にある、インカ帝国の遺跡は何でしょう？","マチュ・ピチュ","マチュピチュ"],
+["地理","カンボジアにある、12世紀に建てられた大寺院の遺跡は何でしょう？","アンコール・ワット","アンコールワット"],
+["地理","都道府県庁所在地のうち、ただ一つひらがなで表記する市はどこでしょう？","さいたま市","さいたま"],
+["歴史","797年に征夷大将軍に任命され、蝦夷の地へ遠征した人物は誰でしょう？","坂上田村麻呂","さかのうえのたむらまろ"],
+["歴史","「この世をば わが世とぞ思ふ 望月の」と詠んだ平安時代の貴族は誰でしょう？","藤原道長","ふじわらのみちなが|道長"],
+["歴史","鎌倉幕府の初代執権は誰でしょう？","北条時政","ほうじょうときまさ"],
+["歴史","1232年に北条泰時が定めた、武家初の成文法は何でしょう？","御成敗式目","貞永式目|ごせいばいしきもく"],
+["歴史","鎌倉幕府の滅亡後、「建武の新政」を行った天皇は誰でしょう？","後醍醐天皇","後醍醐|ごだいごてんのう"],
+["歴史","京都の北山に金閣を建てた、室町幕府第3代将軍は誰でしょう？","足利義満","あしかがよしみつ|義満"],
+["歴史","京都の東山に銀閣を建てた、室町幕府第8代将軍は誰でしょう？","足利義政","あしかがよしまさ|義政"],
+["歴史","1543年、種子島に漂着したポルトガル人によって伝えられた武器は何でしょう？","鉄砲","火縄銃|てっぽう"],
+["歴史","1549年に鹿児島に来航し、日本にキリスト教を伝えた宣教師は誰でしょう？","フランシスコ・ザビエル","ザビエル|フランシスコザビエル"],
+["歴史","豊臣秀吉が全国で行った土地の調査を何というでしょう？","太閤検地","検地|たいこうけんち"],
+["歴史","1837年、元幕府役人の大塩平八郎が乱を起こした都市はどこでしょう？","大坂","大阪|おおさか"],
+["歴史","1868年、明治天皇が神に誓う形で示した新政府の基本方針は何でしょう？","五箇条の御誓文","五か条の御誓文|五箇条のご誓文|ごかじょうのごせいもん"],
+["歴史","大日本帝国憲法が発布されたのは西暦何年でしょう？","1889年","1889"],
+["歴史","「天は人の上に人を造らず」で始まる『学問のすゝめ』を書いた人物は誰でしょう？","福沢諭吉","福澤諭吉|ふくざわゆきち"],
+["歴史","1905年に結ばれた、日露戦争の講和条約は何でしょう？","ポーツマス条約","ポーツマス"],
+["歴史","1895年に結ばれた、日清戦争の講和条約は何でしょう？","下関条約","馬関条約|しものせきじょうやく"],
+["歴史","ナポレオンが最後に流され、生涯を終えた南大西洋の島はどこでしょう？","セントヘレナ島","セントヘレナ"],
+["歴史","1215年、イギリスのジョン王が貴族たちに認めさせた文書は何でしょう？","マグナ・カルタ","マグナカルタ|大憲章"],
+["文学","「物語の出で来はじめの祖」と呼ばれる、かぐや姫が登場する物語は何でしょう？","竹取物語","竹取の翁の物語|たけとりものがたり"],
+["文学","「つれづれなるままに」で始まる随筆『徒然草』の作者は誰でしょう？","兼好法師","吉田兼好|卜部兼好|けんこうほうし"],
+["文学","「ゆく河の流れは絶えずして」で始まる『方丈記』の作者は誰でしょう？","鴨長明","かものちょうめい"],
+["文学","『古今和歌集』の撰者の一人で、『土佐日記』の作者でもあるのは誰でしょう？","紀貫之","きのつらゆき"],
+["文学","人形浄瑠璃『曽根崎心中』を書いた、江戸時代の作家は誰でしょう？","近松門左衛門","ちかまつもんざえもん"],
+["文学","『南総里見八犬伝』の作者は誰でしょう？","曲亭馬琴","滝沢馬琴|馬琴|きょくていばきん"],
+["文学","弥次さん・喜多さんが旅をする『東海道中膝栗毛』の作者は誰でしょう？","十返舎一九","じっぺんしゃいっく"],
+["文学","小説『たけくらべ』の作者で、五千円札の肖像にもなった作家は誰でしょう？","樋口一葉","ひぐちいちよう"],
+["文学","ドイツ留学の体験をもとにした小説『舞姫』の作者は誰でしょう？","森鷗外","森鴎外|もりおうがい|鷗外|鴎外"],
+["文学","歌集『みだれ髪』を発表した歌人は誰でしょう？","与謝野晶子","よさのあきこ"],
+["文学","歌集『一握の砂』を発表した歌人は誰でしょう？","石川啄木","いしかわたくぼく"],
+["文学","社会派推理小説『点と線』『砂の器』の作者は誰でしょう？","松本清張","まつもとせいちょう"],
+["文学","『白夜行』『容疑者Xの献身』などのミステリーの作者は誰でしょう？","東野圭吾","ひがしのけいご"],
+["文学","江戸川乱歩の作品に登場する名探偵は誰でしょう？","明智小五郎","あけちこごろう"],
+["文学","横溝正史の作品に登場する名探偵は誰でしょう？","金田一耕助","きんだいちこうすけ"],
+["文学","『罪と罰』『カラマーゾフの兄弟』の作者は誰でしょう？","ドストエフスキー","ドストエフスキイ"],
+["文学","ある朝、主人公が巨大な虫になっている小説『変身』の作者は誰でしょう？","カフカ","フランツカフカ"],
+["文学","小説『老人と海』の作者で、ノーベル文学賞を受賞したアメリカの作家は誰でしょう？","ヘミングウェイ","ヘミングウェー|アーネストヘミングウェイ"],
+["芸術","システィーナ礼拝堂の祭壇画『最後の審判』を描いたのは誰でしょう？","ミケランジェロ","ミケランジェロブオナローティ"],
+["芸術","『ヴィーナスの誕生』を描いた、イタリアの画家は誰でしょう？","ボッティチェリ","ボッティチェッリ|ボッチチェリ"],
+["芸術","『真珠の耳飾りの少女』を描いた、オランダの画家は誰でしょう？","フェルメール",""],
+["芸術","『夜警』を描いた、オランダの画家は誰でしょう？","レンブラント",""],
+["芸術","国宝『風神雷神図屏風』を描いた、江戸時代初期の絵師は誰でしょう？","俵屋宗達","宗達|たわらやそうたつ"],
+["芸術","国宝『燕子花図屏風』を描いた、江戸時代の絵師は誰でしょう？","尾形光琳","光琳|おがたこうりん"],
+["音楽","交響曲第9番『新世界より』を作曲した、チェコの作曲家は誰でしょう？","ドヴォルザーク","ドボルザーク|ドヴォルジャーク"],
+["音楽","バレエ音楽『白鳥の湖』『くるみ割り人形』を作曲したのは誰でしょう？","チャイコフスキー",""],
+["音楽","管弦楽曲『ボレロ』を作曲した、フランスの作曲家は誰でしょう？","ラヴェル","ラベル"],
+["音楽","「荒城の月」「花」を作曲した、明治時代の作曲家は誰でしょう？","滝廉太郎","瀧廉太郎|たきれんたろう"],
+["漢字","漢字で「啄木鳥」と書く鳥は何でしょう？","キツツキ","きつつき"],
+["漢字","漢字で「信天翁」と書く鳥は何でしょう？","アホウドリ","あほうどり"],
+["漢字","漢字で「海鼠」と書く生き物は何でしょう？","ナマコ","なまこ"],
+["漢字","漢字で「蟷螂」と書く昆虫は何でしょう？","カマキリ","かまきり"],
+["漢字","漢字で「百足」と書く生き物は何でしょう？","ムカデ","むかで"],
+["漢字","漢字で「無花果」と書く果物は何でしょう？","イチジク","いちじく"],
+["漢字","漢字で「山葵」と書く植物は何でしょう？","ワサビ","わさび"],
+["スポーツ","大相撲の番付で、大関の下、小結の上にあたる地位は何でしょう？","関脇","せきわけ"],
+["スポーツ","ゴルフで、規定打数より3打少なくホールアウトすることを何というでしょう？","アルバトロス","ダブルイーグル"],
+["スポーツ","競艇（ボートレース）で、1つのレースに出走するボートは何艇でしょう？","6艇","6|ろくてい"],
+["ゲーム","麻雀で、子が最初のツモで和了る役満を何というでしょう？","地和","チーホー|ちいほう|チーホウ"],
+["ゲーム","麻雀で、13種類の么九牌をすべて揃え、そのうち1種類を2枚にして和了る役満は何でしょう？","国士無双","こくしむそう"],
+["食","ドイツのミュンヘンで毎年秋に開かれる、世界最大級のビール祭りは何でしょう？","オクトーバーフェスト",""],
+["食","アガベ（竜舌蘭）を原料とする、メキシコ特産の蒸留酒は何でしょう？","テキーラ",""],
+["食","米と魚介などを平たい鍋で炊き込む、スペインの料理は何でしょう？","パエリア","パエリャ|パエージャ"]
+]
+};
+
+const LEVEL_NAME = {easy:"初級", normal:"中級", hard:"上級"};
+const SETS = {};
+for(const k in QUESTION_SETS){
+  SETS[k] = QUESTION_SETS[k].map(([g,q,a,alt]) => ({g, q, a, alt: alt ? alt.split("|") : []}));
+}
+
+const $ = id => document.getElementById(id);
+const els = {
+  qno:$("qno"), genre:$("genre"), qtext:$("qtext"), board:$("board"), mark:$("mark"),
+  buzz:$("buzz"), buzzLabel:$("buzzLabel"), status:$("status"), form:$("form"), answer:$("answer"), send:$("send"),
+  result:$("result"), skip:$("skip"), restart:$("restart"), speed:$("speedSel"), count:$("countSel"),
+  sOk:$("sOk"), sNg:$("sNg"), sLeft:$("sLeft"),
+  tabQuiz:$("tabQuiz"), tabList:$("tabList"), viewQuiz:$("viewQuiz"), viewList:$("viewList"),
+  qlist:$("qlist"), search:$("search"), hideAns:$("hideAns"), listCount:$("listCount")
+};
+
+const LOCK_MS = 500; // 押し間違い防止：役割が切り替わった直後はボタンが反応しない時間
+let level = "easy";
+let order = [], idx = -1, shown = 0, timer = null, lockTimer = null, locked = false;
+let state = "idle"; // idle | reading | answering | judged | finished
+let score = {ok:0, ng:0}, lastJudge = null;
+const cur = () => SETS[level][order[idx]];
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+function normalize(s){
+  return (s||"").normalize("NFKC").toLowerCase()
+    .replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0)-0x60))
+    .replace(/[\s・･.,、。「」『』()（）"'!！?？\-–—=＝]/g, "");
+}
+function isCorrect(input, q){
+  const n = normalize(input);
+  if(!n) return false;
+  return [q.a, ...q.alt].some(x => normalize(x) === n);
+}
+
+// 効果音（ボタン操作のあとだけ鳴る）
+let actx = null;
+function beep(freqs, dur, type="square", vol=.08){
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const t0 = actx.currentTime;
+    freqs.forEach((f,i)=>{
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = type; o.frequency.value = f;
+      g.gain.setValueAtTime(vol, t0 + i*dur);
+      g.gain.exponentialRampToValueAtTime(.0001, t0 + (i+1)*dur);
+      o.connect(g).connect(actx.destination);
+      o.start(t0 + i*dur); o.stop(t0 + (i+1)*dur);
+    });
+  }catch(e){}
+}
+const sfx = {
+  buzz: ()=>beep([880,880],.12,"square",.09),
+  ok:   ()=>beep([784,1047,1319],.12,"triangle",.14),
+  ng:   ()=>beep([220,160],.22,"sawtooth",.07)
+};
+
+// 大きなボタンの見た目と文字を、いまの状態に合わせる
+function setButton(){
+  const last = idx >= order.length - 1;
+  const labels = {idle:"スタート", reading:"押す！", answering:"回答中", judged: last ? "結果を見る" : "次の問題", finished:"もう一度"};
+  els.buzzLabel.textContent = labels[state];
+  els.buzz.classList.toggle("go", state !== "reading" && state !== "answering");
+  els.buzz.disabled = state === "answering";
+}
+function lock(){
+  locked = true; els.buzz.classList.add("locked");
+  clearTimeout(lockTimer);
+  lockTimer = setTimeout(()=>{ locked = false; els.buzz.classList.remove("locked"); }, LOCK_MS);
+}
+
+function mainAction(){
+  if(locked) return;
+  if(state === "reading") buzz();
+  else if(state === "idle" || state === "judged") startQuestion();
+  else if(state === "finished"){ reset(); startQuestion(); }
+}
+
+function renderText(){
+  const q = cur();
+  els.qtext.textContent = q.q.slice(0, shown);
+  if(state === "judged" && shown < q.q.length){
+    const r = document.createElement("span"); r.className = "rest"; r.textContent = q.q.slice(shown);
+    els.qtext.append(r);
+  }
+  if(state === "reading"){ const c = document.createElement("span"); c.className = "cursor"; els.qtext.append(c); }
+  els.board.classList.toggle("stopped", state !== "reading");
+}
+
+function updateScore(){
+  els.sOk.textContent = score.ok; els.sNg.textContent = score.ng;
+  els.sLeft.textContent = Math.max(0, order.length - idx - 1);
+}
+
+function setMark(kind){
+  els.mark.className = "mark";
+  if(!kind){ els.mark.textContent = ""; return; }
+  els.mark.textContent = kind === "ok" ? "○" : "×";
+  requestAnimationFrame(()=>{ els.mark.className = "mark show " + kind; });
+}
+
+function startQuestion(){
+  if(idx >= order.length - 1){ finish(); return; }
+  idx++; shown = 0; state = "reading"; lastJudge = null;
+  const q = cur();
+  els.qno.textContent = `第${idx+1}問`;
+  els.genre.textContent = `${LEVEL_NAME[level]}・${q.g}`;
+  setMark(null);
+  els.result.hidden = true;
+  els.answer.value = ""; els.answer.disabled = true; els.send.disabled = true;
+  els.answer.placeholder = "ボタンを押すと入力できます";
+  els.skip.disabled = false;
+  els.status.innerHTML = "問題が流れています。わかったら<strong>赤いボタン</strong>！";
+  setButton(); lock();
+  updateScore(); renderText(); els.buzz.focus({preventScroll:true});
+  tick();
+}
+
+function tick(){
+  clearTimeout(timer);
+  if(state !== "reading") return;
+  const q = cur();
+  if(shown < q.q.length){
+    shown++; renderText();
+    timer = setTimeout(tick, Number(els.speed.value));
+  }else{
+    els.status.textContent = "問題文は全部出ました。答えがわかったらボタンを押してください。";
+    renderText();
+  }
+}
+
+function buzz(){
+  if(state !== "reading") return;
+  clearTimeout(timer); state = "answering"; sfx.buzz();
+  els.buzz.classList.add("pressed"); setTimeout(()=>els.buzz.classList.remove("pressed"),150);
+  setButton();
+  els.answer.disabled = false; els.send.disabled = false;
+  els.answer.placeholder = "答えを入力して Enter";
+  els.status.innerHTML = `<strong>${shown}文字目</strong>で押しました！答えをどうぞ。`;
+  renderText(); els.answer.focus();
+}
+
+function judge(input, forceReveal){
+  const q = cur();
+  state = "judged";
+  const ok = !forceReveal && isCorrect(input, q);
+  lastJudge = forceReveal ? null : (ok ? "ok" : "ng");
+  if(ok){ score.ok++; sfx.ok(); } else if(!forceReveal){ score.ng++; sfx.ng(); }
+  setMark(lastJudge);
+  els.answer.disabled = true; els.send.disabled = true;
+  els.skip.disabled = true;
+  setButton(); lock();
+  els.result.hidden = false;
+  els.result.innerHTML = "";
+  els.result.append("正解は ");
+  const ans = document.createElement("span"); ans.className = "ans"; ans.textContent = q.a; els.result.append(ans);
+  els.result.append(document.createElement("br"));
+  const yours = document.createElement("span"); yours.className = "yours";
+  yours.textContent = forceReveal ? "スルーしました" : `あなたの回答：${input || "（空欄）"}`;
+  els.result.append(yours);
+  if(lastJudge === "ng"){
+    els.result.append(document.createElement("br"));
+    const fix = document.createElement("button"); fix.className = "fix"; fix.type = "button"; fix.textContent = "表記ゆれなので正解にする";
+    fix.addEventListener("click", ()=>{
+      score.ng--; score.ok++; lastJudge = "ok"; setMark("ok"); sfx.ok(); updateScore(); fix.remove();
+      els.status.textContent = "正解に直しました。";
+    });
+    els.result.append(fix);
+  }
+  els.status.textContent = lastJudge === "ok" ? "正解です！" : lastJudge === "ng" ? "残念、不正解です。" : "答えを表示しました。";
+  updateScore(); renderText(); els.buzz.focus({preventScroll:true});
+}
+
+function finish(){
+  clearTimeout(timer); state = "finished";
+  const total = score.ok + score.ng;
+  els.qno.textContent = "結果発表"; els.genre.textContent = `${LEVEL_NAME[level]}・全${order.length}問`;
+  setMark(null);
+  els.qtext.textContent = `正解 ${score.ok}問 ／ 不正解 ${score.ng}問` + (total ? `（正答率 ${Math.round(score.ok/total*100)}%）` : "");
+  els.board.classList.add("stopped");
+  els.result.hidden = true;
+  els.skip.disabled = true;
+  els.status.textContent = "お疲れさまでした。「もう一度」で問題を並べ替えて最初から遊べます。";
+  idx = order.length; updateScore(); els.sLeft.textContent = 0;
+  setButton(); lock();
+}
+
+function reset(){
+  clearTimeout(timer);
+  const n = Math.min(Number(els.count.value), SETS[level].length);
+  order = shuffle([...SETS[level].keys()]).slice(0, n);
+  idx = -1; score = {ok:0, ng:0}; state = "idle";
+}
+
+// 設定を変えたら、その設定で待機状態に戻す
+function toIdle(msg){
+  reset(); locked = false; clearTimeout(lockTimer); els.buzz.classList.remove("locked");
+  setMark(null); els.result.hidden = true;
+  els.answer.value = ""; els.answer.disabled = true; els.send.disabled = true; els.skip.disabled = true;
+  els.qno.textContent = "第1問"; els.genre.textContent = `${LEVEL_NAME[level]}・全${order.length}問`;
+  els.qtext.textContent = "スタートを押すと、ここに問題文が1文字ずつ流れます。";
+  els.board.classList.add("stopped");
+  els.status.textContent = msg;
+  updateScore(); els.sLeft.textContent = order.length;
+  setButton();
+}
+
+function setSeg(group, value){
+  group.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.level === value)));
+}
+
+$("quizLevel").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b || b.dataset.level === level) return;
+  level = b.dataset.level; setSeg($("quizLevel"), level);
+  toIdle(`${LEVEL_NAME[level]}にしました。スタートで始まります。`);
+});
+els.count.addEventListener("change", () => toIdle(`${els.count.value}問にしました。スタートで始まります。`));
+
+els.buzz.addEventListener("click", mainAction);
+els.form.addEventListener("submit", e => { e.preventDefault(); if(state === "answering") judge(els.answer.value.trim(), false); });
+els.skip.addEventListener("click", () => { if(state === "reading" || state === "answering"){ clearTimeout(timer); judge("", true); } });
+els.restart.addEventListener("click", () => { reset(); locked = false; startQuestion(); });
+
+// Space / Enter で大きなボタンを押す（クイズ画面のみ。回答欄・ほかのボタン・選択欄にいるときは除く）
+document.addEventListener("keydown", e => {
+  if(e.repeat || els.viewQuiz.hidden || !$("duel").hidden) return;
+  if(e.code !== "Space" && e.key !== "Enter") return;
+  const a = document.activeElement;
+  if(a === els.answer || a.tagName === "SELECT" || a.tagName === "INPUT") return;
+  if(a.tagName === "BUTTON" && a !== els.buzz) return;
+  e.preventDefault(); mainAction();
+});
+
+// ---- 一覧 ----
+let listLevel = "easy";
+function renderList(){
+  const kw = normalize(els.search.value);
+  const rows = SETS[listLevel].map((q,i) => ({...q, no:i+1}))
+    .filter(q => !kw || [q.q, q.a, q.g, ...q.alt].some(t => normalize(t).includes(kw)));
+  els.qlist.innerHTML = "";
+  const head = document.createElement("div"); head.className = "qrow head";
+  ["番号","ジャンル","問題","答え"].forEach(t => { const s = document.createElement("span"); s.textContent = t; head.append(s); });
+  els.qlist.append(head);
+  if(!rows.length){
+    const em = document.createElement("div"); em.className = "empty"; em.textContent = "当てはまる問題がありません。検索の言葉を変えてみてください。";
+    els.qlist.append(em);
+  }
+  for(const q of rows){
+    const r = document.createElement("div"); r.className = "qrow";
+    const no = document.createElement("span"); no.className = "no"; no.textContent = `${LEVEL_NAME[listLevel]} ${q.no}`;
+    const g = document.createElement("span"); g.className = "g"; g.textContent = q.g;
+    const qt = document.createElement("span"); qt.className = "q"; qt.textContent = q.q;
+    const a = document.createElement("span"); a.className = "a";
+    const b = document.createElement("b"); b.textContent = q.a; a.append(b);
+    if(q.alt.length){ const s = document.createElement("small"); s.textContent = q.alt.join("・"); a.append(s); }
+    a.addEventListener("click", () => r.classList.toggle("open"));
+    r.append(no, g, qt, a); els.qlist.append(r);
+  }
+  els.listCount.textContent = kw ? `${rows.length}件 ／ ${SETS[listLevel].length}問` : `全${rows.length}問`;
+}
+$("listLevel").querySelectorAll("button").forEach(b => b.querySelector(".n").textContent = SETS[b.dataset.level].length);
+$("listLevel").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return;
+  listLevel = b.dataset.level; setSeg($("listLevel"), listLevel); renderList();
+});
+els.search.addEventListener("input", renderList);
+els.hideAns.addEventListener("change", () => els.qlist.classList.toggle("hide-ans", els.hideAns.checked));
+
+// ---- タブ ----
+function showView(name){
+  const list = name === "list";
+  els.viewQuiz.hidden = list; els.viewList.hidden = !list;
+  els.tabQuiz.setAttribute("aria-selected", String(!list));
+  els.tabList.setAttribute("aria-selected", String(list));
+  if(list){
+    // 一覧を開いたら、流れている問題は止める（押した扱いにはしない）
+    if(state === "reading"){ clearTimeout(timer); }
+    listLevel = level; setSeg($("listLevel"), listLevel); renderList();
+  }else if(state === "reading"){ tick(); }
+}
+els.tabQuiz.addEventListener("click", () => showView("quiz"));
+els.tabList.addEventListener("click", () => showView("list"));
+
+// ---- ふたりで対戦 ----
+// p=0 が手前（下半分）、p=1 が向かい（上半分・180度回転）
+const D = {order:[], idx:-1, shown:0, timer:null, lockTimer:null, locked:false,
+  state:"idle", // idle | reading | answering | paused | judged | finished
+  ans:null, missed:new Set(), wrong:["",""], winner:null, score:[0,0]};
+const dEls = {duel:$("duel"), no:$("dNo"), genre:$("dGenre"), skip:$("dSkip"), close:$("dClose"), log:$("dLog")};
+const NAME = ["手前","向かい"];
+const dCur = () => SETS[level][D.order[D.idx]];
+function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+// ひらがなキーボード（押した人の向きで出る）。かな表は左から あ か さ た な は ま や ら わ の列
+const KANA_COLS = ["あいうえお","かきくけこ","さしすせそ","たちつてと","なにぬねの","はひふへほ","まみむめも","や　ゆ　よ","らりるれろ","わをんー　"];
+const VOICED = {"か":"が","き":"ぎ","く":"ぐ","け":"げ","こ":"ご","さ":"ざ","し":"じ","す":"ず","せ":"ぜ","そ":"ぞ","た":"だ","ち":"ぢ","つ":"づ","て":"で","と":"ど","は":"ば","ひ":"び","ふ":"ぶ","へ":"べ","ほ":"ぼ","う":"ゔ"};
+const SEMI = {"は":"ぱ","ひ":"ぴ","ふ":"ぷ","へ":"ぺ","ほ":"ぽ"};
+const SMALL = {"あ":"ぁ","い":"ぃ","う":"ぅ","え":"ぇ","お":"ぉ","つ":"っ","や":"ゃ","ゆ":"ゅ","よ":"ょ","わ":"ゎ"};
+const flip = m => { const r = {}; for(const k in m) r[m[k]] = k; return r; };
+const UNVOICED = flip(VOICED), UNSEMI = flip(SEMI), UNSMALL = flip(SMALL);
+function modLast(value, fwd, back, alt){
+  const a = Array.from(value); if(!a.length) return value;
+  const c = a[a.length-1];
+  if(fwd[c]) a[a.length-1] = fwd[c];
+  else if(back[c]) a[a.length-1] = back[c];
+  else if(alt && alt[c]) a[a.length-1] = alt[c];
+  return a.join("");
+}
+function buildKeyboard(h){
+  const add = (label, cls, fn) => {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = label;
+    if(cls) b.className = cls;
+    if(fn) b.addEventListener("click", fn); else b.disabled = true;
+    h.kb.append(b); return b;
+  };
+  const typeChar = ch => () => { if(D.state === "answering" && D.ans === h.p && Array.from(h.input.value).length < 24) h.input.value += ch; };
+  for(let r = 0; r < 5; r++){
+    for(let c = 0; c < 10; c++){
+      const ch = KANA_COLS[c][r];
+      if(ch === "　") add("", "sp", null); else add(ch, "", typeChar(ch));
+    }
+  }
+  for(const d of "0123456789") add(d, "", typeChar(d));
+  const mod = fn => () => { if(D.state === "answering" && D.ans === h.p) h.input.value = fn(h.input.value); };
+  add("゛", "fn", mod(v => modLast(v, VOICED, UNVOICED, UNSEMI)));
+  add("゜", "fn", mod(v => modLast(v, SEMI, UNSEMI, UNVOICED)));
+  add("小", "fn", mod(v => modLast(v, SMALL, UNSMALL, null)));
+  add(".", "", typeChar("."));
+  add("消す", "fn w2", mod(v => Array.from(v).slice(0, -1).join("")));
+  add("回答", "go w4", () => { if(D.state === "answering" && D.ans === h.p) dJudge(h.p, h.input.value.trim()); });
+}
+
+function makeHalf(p, root){
+  root.innerHTML = `
+    <div class="h-top"><span class="h-name">${p === 0 ? "手前" : "向かい"}</span><span class="h-status"></span>
+      <span class="h-score">手前 <b class="s0">0</b>・向かい <b class="s1">0</b></span></div>
+    <div class="h-main">
+      <div class="h-board"><div class="h-q"></div><div class="h-a"></div><div class="mark" aria-hidden="true"></div></div>
+      <div class="h-btnrow"><button class="buzzer dbuzz go" type="button"><span class="lbl">スタート</span></button></div>
+    </div>
+    <div class="h-ans">
+      <form autocomplete="off" hidden><input type="text" id="dAns${p}" aria-label="回答" placeholder="ひらがなで答えを入力" readonly inputmode="none"></form>
+      <div class="h-kb" hidden></div>
+    </div>`;
+  const h = {
+    p, root, status:root.querySelector(".h-status"), s0:root.querySelector(".s0"), s1:root.querySelector(".s1"),
+    form:root.querySelector("form"), kb:root.querySelector(".h-kb"), input:root.querySelector("input"), a:root.querySelector(".h-a"), btnrow:root.querySelector(".h-btnrow"),
+    q:root.querySelector(".h-q"), board:root.querySelector(".h-board"), mark:root.querySelector(".mark"),
+    btn:root.querySelector(".dbuzz"), lbl:root.querySelector(".lbl")
+  };
+  h.btn.addEventListener("click", () => dMain(p));
+  h.form.addEventListener("submit", e => { e.preventDefault(); if(D.state === "answering" && D.ans === p) dJudge(p, h.input.value.trim()); });
+  buildKeyboard(h);
+  return h;
+}
+const halves = [makeHalf(0, $("halfA")), makeHalf(1, $("halfB"))];
+
+function dLock(){
+  D.locked = true; clearTimeout(D.lockTimer);
+  D.lockTimer = setTimeout(()=>{ D.locked = false; }, LOCK_MS);
+}
+function dMark(kind){
+  halves.forEach(h => {
+    h.mark.className = "mark";
+    h.mark.textContent = kind ? (kind === "ok" ? "○" : "×") : "";
+    h.board.classList.toggle("judged", !!kind);
+    if(kind) requestAnimationFrame(()=>{ h.mark.className = "mark show " + kind; });
+  });
+}
+
+// 問題文が枠に収まる最大の文字サイズにする（全文で測るので、流れている間も大きさは変わらない）
+const FIT_MAX = 22, FIT_MIN = 12;
+function dFit(h, q){
+  const box = h.q;
+  h.board.style.setProperty("--mk", Math.round(Math.min(box.clientHeight, h.board.clientWidth) * 0.9) + "px");
+  const bz = Math.max(48, Math.min(80, h.btnrow.clientHeight || 80));
+  h.root.style.setProperty("--bz", bz + "px");
+  const key = `${D.idx}|${D.state === "finished"}|${box.clientWidth}x${box.clientHeight}|${h.form.hidden}|${h.root.classList.contains("answering")}`;
+  if(h.fitKey === key) return;
+  const saved = box.innerHTML;
+  box.classList.remove("scroll");
+  box.textContent = D.state === "finished" || !q ? box.textContent : q.q;
+  let size = FIT_MAX;
+  while(size > FIT_MIN){
+    box.style.fontSize = size + "px";
+    if(box.scrollHeight <= box.clientHeight + 1) break;
+    size -= 1;
+  }
+  box.style.fontSize = size + "px";
+  if(box.scrollHeight > box.clientHeight + 1) box.classList.add("scroll");
+  box.innerHTML = saved;
+  h.fitKey = key;
+}
+// スマホのキーボードや URL バーで見える範囲が変わっても、対戦画面をぴったり合わせる
+function syncDuel(){
+  const v = window.visualViewport;
+  if(dEls.duel.hidden) return;
+  if(v){ dEls.duel.style.height = v.height + "px"; dEls.duel.style.top = v.offsetTop + "px"; }
+  else dEls.duel.style.height = window.innerHeight + "px";
+  window.scrollTo(0, 0);
+  halves.forEach(h => { h.fitKey = ""; });
+  dRender();
+}
+if(window.visualViewport){ visualViewport.addEventListener("resize", syncDuel); visualViewport.addEventListener("scroll", syncDuel); }
+window.addEventListener("resize", syncDuel);
+window.addEventListener("scroll", () => { if(!dEls.duel.hidden) window.scrollTo(0, 0); });
+// 対戦画面では、問題文の枠の中以外はスワイプしても動かさない
+dEls.duel.addEventListener("touchmove", e => {
+  const q = e.target.closest && e.target.closest(".h-q.scroll");
+  if(!q) e.preventDefault();
+}, {passive:false});
+
+function dRender(){
+  const q = D.idx >= 0 && D.idx < D.order.length ? dCur() : null;
+  const last = D.idx >= D.order.length - 1;
+  dEls.duel.classList.toggle("ans0", D.state === "answering" && D.ans === 0);
+  dEls.duel.classList.toggle("ans1", D.state === "answering" && D.ans === 1);
+  halves.forEach(h => {
+    const p = h.p, o = 1 - p;
+    h.s0.textContent = D.score[0]; h.s1.textContent = D.score[1];
+    // 問題文
+    if(D.state === "finished"){
+      const r = D.score[p] > D.score[o] ? "あなたの勝ち！" : D.score[p] < D.score[o] ? "あいての勝ち" : "引き分け";
+      h.q.textContent = `${D.score[p]} 対 ${D.score[o]} で${r}`;
+    }else if(!q){
+      h.q.textContent = "どちらかのボタンでスタート。問題文が1文字ずつ流れます。";
+    }else{
+      h.q.textContent = q.q.slice(0, D.shown);
+      if(D.state === "judged" && D.shown < q.q.length){
+        const s = document.createElement("span"); s.className = "rest"; s.textContent = q.q.slice(D.shown); h.q.append(s);
+      }
+      if(D.state === "reading"){ const c = document.createElement("span"); c.className = "cursor"; h.q.append(c); }
+    }
+    // ボタン
+    const canBuzz = D.state === "reading" && !D.missed.has(p);
+    const labels = {idle:"スタート", reading: D.missed.has(p) ? "お手つき" : "押す！", answering: D.ans === p ? "回答中" : "待って",
+      paused:"待って", judged: last ? "結果へ" : "次の問題", finished:"もう一度"};
+    h.lbl.textContent = labels[D.state];
+    h.btn.classList.toggle("go", !["reading","answering","paused"].includes(D.state));
+    h.btn.disabled = D.state === "answering" || D.state === "paused" || (D.state === "reading" && !canBuzz);
+    // 状況
+    let st = "";
+    if(D.state === "idle") st = "どちらかのボタンでスタート";
+    else if(D.state === "reading") st = D.missed.has(p) ? "お手つき。あいての回答を待ってください" : (D.missed.has(o) ? "あいてはお手つき。<strong>あなただけ押せます</strong>" : "わかったら<strong>押す！</strong>");
+    else if(D.state === "answering") st = D.ans === p ? "<strong>答えを入力してください</strong>" : "あいてが回答中…";
+    else if(D.state === "paused") st = D.ans === p ? `×「${escapeHtml(D.wrong[p])}」` : "あいてはお手つき。続きが流れます";
+    else if(D.state === "judged") st = D.winner === p ? "<strong>正解！</strong>" : D.winner === o ? "あいてが正解" : "どちらも正解できませんでした";
+    else if(D.state === "finished") st = "お疲れさまでした";
+    h.status.innerHTML = st;
+    // 回答欄と答え
+    h.form.hidden = !(D.state === "answering" && D.ans === p);
+    h.kb.hidden = h.form.hidden;
+    h.btnrow.classList.toggle("off", D.state === "answering" && D.ans === p);
+    h.root.classList.toggle("answering", D.state === "answering" && D.ans === p);
+    h.a.innerHTML = "";
+    if(D.state === "judged" && q){
+      h.a.append("正解は ");
+      const a = document.createElement("span"); a.className = "ans"; a.textContent = q.a; h.a.append(a);
+    }
+    dFit(h, q);
+  });
+  dEls.skip.disabled = !["reading","paused"].includes(D.state);
+  if(D.state === "finished"){ dEls.no.textContent = "結果"; dEls.genre.textContent = `${LEVEL_NAME[level]}・全${D.order.length}問`; }
+  else if(q){ dEls.no.textContent = `第${D.idx+1}問`; dEls.genre.textContent = `${LEVEL_NAME[level]}・${q.g}・残り${D.order.length - D.idx - 1}問`; }
+  else { dEls.no.textContent = "対戦"; dEls.genre.textContent = `${LEVEL_NAME[level]}・${D.order.length}問`; }
+}
+
+function dReset(){
+  clearTimeout(D.timer);
+  const n = Math.min(Number(els.count.value), SETS[level].length);
+  D.order = shuffle([...SETS[level].keys()]).slice(0, n);
+  D.idx = -1; D.score = [0,0]; dEls.log.textContent = ""; D.state = "idle"; D.ans = null; D.winner = null; D.missed = new Set();
+  dMark(null); dRender();
+}
+function dMain(p){
+  if(D.locked) return;
+  if(D.state === "reading") dBuzz(p);
+  else if(D.state === "idle" || D.state === "judged") dStart();
+  else if(D.state === "finished"){ dReset(); dStart(); }
+}
+function dStart(){
+  if(D.idx >= D.order.length - 1){ clearTimeout(D.timer); D.state = "finished"; dMark(null); dLock(); dRender(); return; }
+  D.idx++; D.shown = 0; D.state = "reading"; D.ans = null; D.winner = null; D.missed = new Set(); D.wrong = ["",""]; dEls.log.textContent = "";
+  halves.forEach(h => { h.input.value = ""; h.board.scrollTop = 0; });
+  dMark(null); dLock(); dRender(); dTick();
+}
+function dTick(){
+  clearTimeout(D.timer);
+  if(D.state !== "reading") return;
+  if(D.shown < dCur().q.length){ D.shown++; dRender(); D.timer = setTimeout(dTick, Number(els.speed.value)); }
+}
+function dBuzz(p){
+  if(D.state !== "reading" || D.missed.has(p)) return;
+  clearTimeout(D.timer); D.state = "answering"; D.ans = p; sfx.buzz();
+  dRender();
+}
+function dJudge(p, input){
+  halves[p].input.blur();
+  if(isCorrect(input, dCur())){
+    D.score[p]++; D.winner = p; D.state = "judged"; dEls.log.textContent = `${NAME[p]}が正解：${NAME[p]}に1点`; sfx.ok(); dMark("ok"); dLock(); dRender(); return;
+  }
+  D.missed.add(p); D.wrong[p] = input || "（空欄）"; dEls.log.textContent = `${NAME[p]}がお手つき：点数は変わりません`; sfx.ng(); dMark("ng");
+  if(D.missed.has(1 - p)){ D.state = "judged"; dLock(); dRender(); return; }
+  // もう一人が残っていれば、×を少し見せてから続きを流す
+  D.state = "paused"; dRender();
+  setTimeout(() => {
+    if(D.state !== "paused") return;
+    D.state = "reading"; D.ans = null; dMark(null); dLock(); dRender(); dTick();
+  }, 1200);
+}
+dEls.skip.addEventListener("click", () => { if(["reading","paused"].includes(D.state)){ clearTimeout(D.timer); D.state = "judged"; dMark(null); dLock(); dRender(); } });
+let scrollMemo = 0;
+function openDuel(){
+  toIdle("ひとりモードは待機中です。");
+  dEls.duel.hidden = false;
+  scrollMemo = window.scrollY; document.documentElement.classList.add("duel-lock");
+  halves.forEach(h => { h.fitKey = ""; });
+  syncDuel(); dReset();
+}
+function closeDuel(){
+  clearTimeout(D.timer); D.state = "idle";
+  dEls.duel.hidden = true; document.documentElement.classList.remove("duel-lock");
+  window.scrollTo(0, scrollMemo);
+}
+$("duelOpen").addEventListener("click", openDuel);
+dEls.close.addEventListener("click", closeDuel);
+
+// 初期表示
+toIdle("難易度と問題数を選んで、青いボタン（スタート）を押してください。");
+if(location.hash === "#list") showView("list");
+</script>
+</body>
+</html>
