@@ -69,6 +69,9 @@
   body.compact .list { gap: 7px; }
   body.compact .card { padding: 9px 18px 8px; gap: 1px; }
   body.compact footer { margin-top: 6px; }
+  /* ホーム画面のアプリで開いたときは、時計・電池の表示（とその下のぼかし）を避けて下げる */
+  html.standalone body { padding-top: max(calc(env(safe-area-inset-top) + 28px), 76px); }
+  html.standalone body.compact { padding-top: max(calc(env(safe-area-inset-top) + 20px), 68px); }
   /* それでも収まらないときは、いちばん下の説明文（AI確認の補足）だけ隠す */
   body.tight footer { display: none; }
   footer { margin-top: 10px; font-size: .78rem; color: var(--text-muted); line-height: 1.7; text-align: center; }
@@ -190,6 +193,11 @@
       lines.forEach(function (line) { card.appendChild(textEl('div', 'card-line', line)); });
       list.appendChild(card);
     });
+  }
+
+  // ホーム画面のアプリとして開いているか
+  if (window.navigator.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)) {
+    document.documentElement.classList.add('standalone');
   }
 
   // 画面に収まっているかを確かめて、はみ出すときは詰めた表示にする
