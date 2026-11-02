@@ -44,15 +44,18 @@
   --danger: #F08A84; --ok: #7CCB9A; color-scheme: dark;
 }
 * { box-sizing: border-box; }
-html { background: var(--bg); -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
-.wrap { max-width: 640px; margin: 0 auto; padding: calc(20px + env(safe-area-inset-top)) 16px calc(48px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 16px; }
+/* 1画面に収める: ページは固定し、グラフが残りの高さを使う。履歴は下から出す一覧の中だけスクロール */
+html { height: 100%; overflow: hidden; overscroll-behavior: none; background: var(--bg); -webkit-text-size-adjust: 100%; }
+body { position: fixed; inset: 0; margin: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: none; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 640px; height: 100%; margin: 0 auto; padding: calc(12px + env(safe-area-inset-top)) 16px calc(12px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 10px; }
 /* ホーム画面アプリで開いたとき、タイトルが時計・電池の表示に重ならないよう少し下げる */
-html.standalone .wrap { padding-top: max(calc(env(safe-area-inset-top) + 20px), 64px); }
-header h1 { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; margin: 0; letter-spacing: .02em; text-wrap: balance; }
-header p { margin: 2px 0 0; color: var(--muted); font-size: .85rem; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; min-width: 0; }
-.card h2 { font-family: var(--font-display); font-size: 1.05rem; margin: 0 0 12px; }
+html.standalone .wrap { padding-top: max(calc(env(safe-area-inset-top) + 8px), 52px); }
+header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+header h1 { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; margin: 0; letter-spacing: .02em; white-space: nowrap; }
+.btn-hist { flex: none; padding: 6px 12px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font-family: var(--font-display); font-weight: 700; font-size: .85rem; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; min-width: 0; }
+.card h2 { font-family: var(--font-display); font-size: 1.05rem; margin: 0 0 8px; }
+.card.grow { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
 .notice { font-size: .85rem; padding: 10px 12px; border-radius: 10px; background: var(--poko-soft); color: var(--fg); }
 .notice.err { background: var(--ori-soft); }
 
@@ -79,7 +82,7 @@ button { font: inherit; cursor: pointer; border-radius: 10px; }
 .btn-del { padding: 11px 14px; border: 1px solid var(--line); background: transparent; color: var(--danger); font-size: .9rem; }
 .btn-del.armed { background: var(--danger); color: var(--surface); border-color: var(--danger); }
 button:focus-visible { outline: 2px solid var(--poko); outline-offset: 2px; }
-.status { font-size: .85rem; min-height: 1.4em; margin-top: 8px; color: var(--muted); }
+.status { font-size: .8rem; min-height: 1.4em; margin-top: 6px; color: var(--muted); }
 .status.ok { color: var(--ok); }
 .status.err { color: var(--danger); }
 
@@ -105,15 +108,22 @@ button:focus-visible { outline: 2px solid var(--poko); outline-offset: 2px; }
 .stat.ori .v .bmi { color: var(--ori); }
 .stat.poko .v .bmi { color: var(--poko); }
 .stat .d { font-size: .75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
-#chart { width: 100%; }
-#chart svg { display: block; width: 100%; height: auto; }
+#chart { width: 100%; flex: 1 1 auto; min-height: 120px; position: relative; }
+#chart svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 #chart .pt { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 #chart .pt:hover .mark, #chart .pt:focus-visible .mark { stroke-width: 3.5; }
 #chart .pt:focus { outline: none; }
 #chart text { font-family: var(--font-body); font-variant-numeric: tabular-nums; }
 .empty { color: var(--muted); font-size: .9rem; text-align: center; padding: 40px 8px; }
 
-/* 履歴 */
+/* 履歴（下から出す一覧） */
+dialog#hist { border: none; padding: 0; margin: auto auto 0; width: 100%; max-width: 640px; max-height: calc(100% - 48px - env(safe-area-inset-top)); border-radius: 16px 16px 0 0; background: var(--surface); color: var(--fg); }
+dialog#hist::backdrop { background: rgba(0, 0, 0, .35); }
+dialog#hist[open] { display: flex; flex-direction: column; }
+.hist-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px 8px; border-bottom: 1px solid var(--line); }
+.hist-head h2 { font-family: var(--font-display); font-size: 1.05rem; margin: 0; }
+.btn-close { padding: 6px 14px; border: 1px solid var(--line); background: transparent; color: var(--fg); font-size: .9rem; }
+.hist-body { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 0 16px calc(16px + env(safe-area-inset-bottom)); }
 .tbl-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 th, td { padding: 9px 8px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
@@ -128,6 +138,12 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
 .hint { font-size: .78rem; color: var(--muted); margin: 8px 0 0; }
 .more { margin-top: 10px; width: 100%; padding: 9px; border: 1px solid var(--line); background: transparent; color: var(--fg); }
 @media (prefers-reduced-motion: no-preference) { .btn-main, .who label { transition: background .15s, border-color .15s; } }
+/* 1画面に入りきらない低い画面（古い小さいiPhoneなど）だけ、重ならずに下へスクロールする */
+@media (max-height: 620px), (max-width: 340px) {
+  .wrap { height: auto; }
+  .card.grow { flex: none; }
+  #chart { flex: none; height: 200px; }
+}
 </style>
 <script>if (window.navigator.standalone || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches)) document.documentElement.classList.add("standalone");</script>
 </head>
@@ -136,12 +152,12 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
 <div class="wrap">
   <header>
     <h1>ふたりの体重記録</h1>
-    <p>オリシとぽこしの毎日の体重</p>
+    <button type="button" class="btn-hist" id="open-hist">履歴</button>
   </header>
 
   <div id="notice" class="notice" hidden></div>
 
-  <section class="card" aria-labelledby="h-chart">
+  <section class="card grow" aria-labelledby="h-chart">
     <div class="chart-head">
       <h2 id="h-chart">推移</h2>
       <div class="range" id="range">
@@ -153,11 +169,9 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
     </div>
     <div class="stats" id="stats"></div>
     <div id="chart"><div class="empty">読み込み中…</div></div>
-    <p class="hint">上の色つきの枠（または「記録する」の名前ボタン）を押すと、その人のBMIがグラフの右端に出ます。グラフの点をタップすると、その日の記録を直したり消したりできます。</p>
   </section>
 
-  <section class="card" aria-labelledby="h-input">
-    <h2 id="h-input">記録する</h2>
+  <section class="card" aria-label="記録する">
     <form id="form" novalidate>
       <div class="who" role="radiogroup" aria-label="誰の記録か">
         <input type="radio" name="who" id="who-orishi" value="orishi">
@@ -173,23 +187,27 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
         <button type="submit" class="btn-main" id="save">記録する</button>
         <button type="button" class="btn-del" id="del" hidden>この日の記録を消す</button>
       </div>
-      <p class="hint" id="del-hint" hidden>「この日の記録を消す」は2回押すと消えます。押し間違いを防ぐためです。</p>
       <div class="status" id="status" aria-live="polite"></div>
     </form>
   </section>
+</div>
 
-  <section class="card" aria-labelledby="h-list">
+<dialog id="hist" aria-labelledby="h-list">
+  <div class="hist-head">
     <h2 id="h-list">履歴</h2>
+    <button type="button" class="btn-close" id="close-hist">閉じる</button>
+  </div>
+  <div class="hist-body">
     <div class="tbl-wrap">
       <table>
         <thead><tr><th>日付</th><th class="ori">オリシ</th><th class="poko">ぽこし</th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
     </div>
-    <p class="hint">体重の下の小さい数字がBMIです。行をタップすると、その日の記録を直せます。</p>
+    <p class="hint">体重の下の小さい数字がBMIです。行をタップすると、その日の記録を直せます。グラフの点をタップしても直せます。</p>
     <button type="button" class="more" id="more" hidden>もっと見る</button>
-  </section>
-</div>
+  </div>
+</dialog>
 
 <script>
 (function () {
@@ -234,7 +252,6 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
     if (!keepWeight) $("weight").value = v != null ? fmt(v) : "";
     $("save").textContent = v != null ? "上書き保存" : "記録する";
     $("del").hidden = v == null || !ready;
-    $("del-hint").hidden = $("del").hidden;
     disarmDel();
     $("save").disabled = !ready || busy;
     document.querySelectorAll("#rows tr").forEach((tr) => tr.classList.toggle("sel", tr.dataset.date === $("date").value));
@@ -357,7 +374,7 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
       box.innerHTML = '<div class="empty">' + (rows.size ? "この期間の記録はありません。期間を広げてみてください。" : "まだ記録がありません。下の「記録する」で最初の体重を入れると、ここに折れ線グラフが出ます。") + "</div>";
       return;
     }
-    const W = Math.max(300, Math.round(box.clientWidth || 600)), H = Math.round(Math.min(300, Math.max(220, W * 0.55)));
+    const W = Math.max(260, Math.round(box.clientWidth || 600)), H = Math.max(120, Math.round(box.clientHeight || 240)); // 枠の大きさに合わせる
     const bk = who(), showBmi = num(heights[bk]) != null; // 選んでいる人のBMI目盛りを右端に出す
     const m = { l: 40, r: showBmi ? 84 : 44, t: 24, b: 28 };
     const iw = W - m.l - m.r, ih = H - m.t - m.b;
@@ -406,16 +423,7 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
         s += "</g>";
       });
     });
-    // 最新値ラベル（重なりを避ける）
-    const ends = series.filter((sr) => sr.pts.length).map((sr) => { const q = sr.pts[sr.pts.length - 1]; return { sr: sr, x: x(q.d), y: y(q.v), v: q.v }; });
-    if (ends.length === 2 && Math.abs(ends[0].y - ends[1].y) < 16) {
-      const [a, b] = ends[0].y <= ends[1].y ? [ends[0], ends[1]] : [ends[1], ends[0]];
-      const mid = (a.y + b.y) / 2; a.ly = mid - 8; b.ly = mid + 8;
-    }
-    ends.forEach((e) => {
-      const ly = Math.max(m.t + 6, Math.min(H - m.b - 4, e.ly != null ? e.ly : e.y));
-      s += '<text x="' + Math.min(e.x + 8, W - 2).toFixed(1) + '" y="' + ly.toFixed(1) + '" dy="0.35em" font-size="12" font-weight="700" fill="' + e.sr.p.color + '"' + (e.x + 8 > W - m.r + 4 ? ' text-anchor="end"' : "") + ">" + fmt(e.v) + "</text>";
-    });
+    // 最新の数字は上の色つきの枠に出ているので、グラフの中には書かない（右端の目盛りと重なるため）
     s += "</svg>";
     box.innerHTML = s;
   }
@@ -438,9 +446,14 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
     if (k) $("who-" + k).checked = true;
     store("who", who());
     syncForm(); setStatus(""); renderChart();
-    document.getElementById("h-input").scrollIntoView({ behavior: "smooth", block: "start" });
+    if ($("hist").open) $("hist").close();
     $("weight").focus({ preventScroll: true });
   }
+
+  // ---- 履歴（下から出す一覧） ----
+  $("open-hist").addEventListener("click", () => { renderList(); $("hist").showModal(); $("hist").querySelector(".hist-body").scrollTop = 0; });
+  $("close-hist").addEventListener("click", () => $("hist").close());
+  $("hist").addEventListener("click", (e) => { if (e.target === $("hist")) $("hist").close(); }); // 暗いところを押しても閉じる
 
   $("rows").addEventListener("click", (e) => {
     const tr = e.target.closest("tr[data-date]"); if (!tr) return;
@@ -467,8 +480,10 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
 
   function renderAll() { renderList(); renderChart(); syncForm(document.activeElement === $("weight") && $("weight").value !== ""); }
 
-  let rt = null;
-  window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(renderChart, 150); });
+  let rt = null, lastSize = "";
+  const onResize = () => { clearTimeout(rt); rt = setTimeout(() => { const b = $("chart"), s = b.clientWidth + "x" + b.clientHeight; if (s !== lastSize) { lastSize = s; renderChart(); } }, 120); };
+  if (window.ResizeObserver) new ResizeObserver(onResize).observe($("chart"));
+  else window.addEventListener("resize", onResize);
 
   // ---- データ接続 ----
   renderList(); renderStats([]); syncForm();
