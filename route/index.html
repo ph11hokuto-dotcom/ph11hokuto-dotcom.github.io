@@ -29,7 +29,7 @@
   /* 画面を引っぱったときにページが上下に動く（バウンドする）のを止める。
      中身が収まらない小さい画面では body の中だけスクロールできる */
   html { height: 100%; overflow: hidden; overscroll-behavior: none; }
-  body { height: 100%; overflow-y: auto; overscroll-behavior: none; }
+  body { position: fixed; top: 0; right: 0; bottom: 0; left: 0; overflow-y: auto; overscroll-behavior: none; }
   body {
     margin: 0;
     background: linear-gradient(160deg, var(--bg-a) 0%, var(--bg-b) 45%, var(--bg-c) 100%);
@@ -69,6 +69,8 @@
   body.compact .list { gap: 7px; }
   body.compact .card { padding: 9px 18px 8px; gap: 1px; }
   body.compact footer { margin-top: 6px; }
+  /* それでも収まらないときは、いちばん下の説明文（AI確認の補足）だけ隠す */
+  body.tight footer { display: none; }
   footer { margin-top: 10px; font-size: .78rem; color: var(--text-muted); line-height: 1.7; text-align: center; }
 </style>
 </head>
@@ -193,8 +195,9 @@
   // 画面に収まっているかを確かめて、はみ出すときは詰めた表示にする
   function fitToScreen() {
     var body = document.body;
-    body.classList.remove('compact');
+    body.classList.remove('compact', 'tight');
     if (body.scrollHeight > body.clientHeight + 1) body.classList.add('compact');
+    if (body.scrollHeight > body.clientHeight + 1) body.classList.add('tight');
   }
   window.addEventListener('resize', fitToScreen);
   window.addEventListener('orientationchange', fitToScreen);
