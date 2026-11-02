@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="体重記録">
+<meta name="theme-color" content="#EEF3F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#11181D" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>ふたりの体重記録</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap">
+<style>
+/* 1カラムのスマホアプリ型: 入力カード → グラフ → 履歴 */
+:root {
+  --bg: #EEF3F6;
+  --surface: #FFFFFF;
+  --fg: #1D2A33;
+  --muted: #61717C;
+  --line: #D5DFE6;
+  --ori: #D9577A;
+  --ori-soft: #FBE7ED;
+  --poko: #2C6BD6;
+  --poko-soft: #E3EDFB;
+  --danger: #B3322E;
+  --ok: #2E7D4F;
+  --font-display: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-body: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11181D; --surface: #1A242B; --fg: #E6EDF2; --muted: #9AAAB5; --line: #2E3C46;
+    --ori: #F07D9C; --ori-soft: #3A2129; --poko: #6FA0F2; --poko-soft: #1C2B42;
+    --danger: #F08A84; --ok: #7CCB9A; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11181D; --surface: #1A242B; --fg: #E6EDF2; --muted: #9AAAB5; --line: #2E3C46;
+  --ori: #F07D9C; --ori-soft: #3A2129; --poko: #6FA0F2; --poko-soft: #1C2B42;
+  --danger: #F08A84; --ok: #7CCB9A; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
+.wrap { max-width: 640px; margin: 0 auto; padding: calc(20px + env(safe-area-inset-top)) 16px calc(48px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 16px; }
+/* ホーム画面アプリで開いたとき、タイトルが時計・電池の表示に重ならないよう少し下げる */
+html.standalone .wrap { padding-top: max(calc(env(safe-area-inset-top) + 20px), 64px); }
+header h1 { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; margin: 0; letter-spacing: .02em; text-wrap: balance; }
+header p { margin: 2px 0 0; color: var(--muted); font-size: .85rem; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; min-width: 0; }
+.card h2 { font-family: var(--font-display); font-size: 1.05rem; margin: 0 0 12px; }
+.notice { font-size: .85rem; padding: 10px 12px; border-radius: 10px; background: var(--poko-soft); color: var(--fg); }
+.notice.err { background: var(--ori-soft); }
+
+/* 入力 */
+.who { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.who input { position: absolute; opacity: 0; pointer-events: none; }
+.who label { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 10px; border: 2px solid var(--line); font-family: var(--font-display); font-weight: 700; cursor: pointer; }
+.who label .dot { width: 10px; height: 10px; border-radius: 50%; }
+.who input:checked + label.ori { border-color: var(--ori); background: var(--ori-soft); }
+.who input:checked + label.poko { border-color: var(--poko); background: var(--poko-soft); }
+.who input:focus-visible + label { outline: 2px solid var(--fg); outline-offset: 2px; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field span { font-size: .78rem; color: var(--muted); letter-spacing: .04em; }
+.field input { font: inherit; font-size: 1.1rem; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); width: 100%; min-width: 0; font-variant-numeric: tabular-nums; }
+.field input:focus-visible { outline: 2px solid var(--poko); outline-offset: 1px; }
+.unit { position: relative; }
+.unit::after { content: "kg"; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: .9rem; pointer-events: none; }
+.unit input { padding-right: 36px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+button { font: inherit; cursor: pointer; border-radius: 10px; }
+.btn-main { flex: 1 1 160px; padding: 12px; border: none; background: var(--fg); color: var(--surface); font-family: var(--font-display); font-weight: 700; font-size: 1rem; }
+.btn-main:disabled { opacity: .45; cursor: default; }
+.btn-del { padding: 11px 14px; border: 1px solid var(--line); background: transparent; color: var(--danger); font-size: .9rem; }
+.btn-del.armed { background: var(--danger); color: var(--surface); border-color: var(--danger); }
+button:focus-visible { outline: 2px solid var(--poko); outline-offset: 2px; }
+.status { font-size: .85rem; min-height: 1.4em; margin-top: 8px; color: var(--muted); }
+.status.ok { color: var(--ok); }
+.status.err { color: var(--danger); }
+
+/* グラフ */
+.chart-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+.chart-head h2 { margin: 0; }
+.range { display: flex; gap: 4px; background: var(--bg); padding: 3px; border-radius: 9px; }
+.range button { border: none; background: transparent; color: var(--muted); padding: 4px 10px; font-size: .8rem; border-radius: 7px; }
+.range button[aria-pressed="true"] { background: var(--surface); color: var(--fg); font-weight: 700; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.stat { border-radius: 10px; padding: 8px 10px; min-width: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.stat.ori.on { box-shadow: inset 0 0 0 2px var(--ori); }
+.stat.poko.on { box-shadow: inset 0 0 0 2px var(--poko); }
+.stat:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.stat.ori { background: var(--ori-soft); }
+.stat.poko { background: var(--poko-soft); }
+.stat .nm { font-size: .78rem; font-family: var(--font-display); font-weight: 700; }
+.stat.ori .nm { color: var(--ori); }
+.stat.poko .nm { color: var(--poko); }
+.stat .v { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat .v small { font-size: .75rem; font-weight: 400; color: var(--muted); }
+.stat .v .bmi { font-size: .85rem; font-weight: 700; margin-left: 8px; white-space: nowrap; }
+.stat.ori .v .bmi { color: var(--ori); }
+.stat.poko .v .bmi { color: var(--poko); }
+.stat .d { font-size: .75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+#chart { width: 100%; }
+#chart svg { display: block; width: 100%; height: auto; }
+#chart .pt { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#chart .pt:hover .mark, #chart .pt:focus-visible .mark { stroke-width: 3.5; }
+#chart .pt:focus { outline: none; }
+#chart text { font-family: var(--font-body); font-variant-numeric: tabular-nums; }
+.empty { color: var(--muted); font-size: .9rem; text-align: center; padding: 40px 8px; }
+
+/* 履歴 */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { padding: 9px 8px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: .78rem; color: var(--muted); font-weight: 400; }
+th.ori { color: var(--ori); font-weight: 700; }
+th.poko { color: var(--poko); font-weight: 700; }
+tbody tr { cursor: pointer; }
+tbody tr:hover td, tbody tr.sel td { background: var(--bg); }
+td.none { color: var(--line); }
+td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted); }
+.hint { font-size: .78rem; color: var(--muted); margin: 8px 0 0; }
+.more { margin-top: 10px; width: 100%; padding: 9px; border: 1px solid var(--line); background: transparent; color: var(--fg); }
+@media (prefers-reduced-motion: no-preference) { .btn-main, .who label { transition: background .15s, border-color .15s; } }
+</style>
+<script>if (window.navigator.standalone || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches)) document.documentElement.classList.add("standalone");</script>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>ふたりの体重記録</h1>
+    <p>オリシとぽこしの毎日の体重</p>
+  </header>
+
+  <div id="notice" class="notice" hidden></div>
+
+  <section class="card" aria-labelledby="h-chart">
+    <div class="chart-head">
+      <h2 id="h-chart">推移</h2>
+      <div class="range" id="range">
+        <button type="button" data-days="30" aria-pressed="false">1か月</button>
+        <button type="button" data-days="90" aria-pressed="true">3か月</button>
+        <button type="button" data-days="365" aria-pressed="false">1年</button>
+        <button type="button" data-days="0" aria-pressed="false">全部</button>
+      </div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div id="chart"><div class="empty">読み込み中…</div></div>
+    <p class="hint">上の色つきの枠（または「記録する」の名前ボタン）を押すと、その人のBMIがグラフの右端に出ます。グラフの点をタップすると、その日の記録を直したり消したりできます。</p>
+  </section>
+
+  <section class="card" aria-labelledby="h-input">
+    <h2 id="h-input">記録する</h2>
+    <form id="form" novalidate>
+      <div class="who" role="radiogroup" aria-label="誰の記録か">
+        <input type="radio" name="who" id="who-orishi" value="orishi">
+        <label for="who-orishi" class="ori"><span class="dot" style="background:var(--ori)"></span>オリシ</label>
+        <input type="radio" name="who" id="who-pokoshi" value="pokoshi">
+        <label for="who-pokoshi" class="poko"><span class="dot" style="background:var(--poko)"></span>ぽこし</label>
+      </div>
+      <div class="fields">
+        <label class="field"><span>日付</span><input type="date" id="date" required></label>
+        <label class="field"><span>体重</span><span class="unit"><input type="number" id="weight" inputmode="decimal" step="0.1" min="20" max="200" placeholder="00.0"></span></label>
+      </div>
+      <div class="actions">
+        <button type="submit" class="btn-main" id="save">記録する</button>
+        <button type="button" class="btn-del" id="del" hidden>この日の記録を消す</button>
+      </div>
+      <p class="hint" id="del-hint" hidden>「この日の記録を消す」は2回押すと消えます。押し間違いを防ぐためです。</p>
+      <div class="status" id="status" aria-live="polite"></div>
+    </form>
+  </section>
+
+  <section class="card" aria-labelledby="h-list">
+    <h2 id="h-list">履歴</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>日付</th><th class="ori">オリシ</th><th class="poko">ぽこし</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p class="hint">体重の下の小さい数字がBMIです。行をタップすると、その日の記録を直せます。</p>
+    <button type="button" class="more" id="more" hidden>もっと見る</button>
+  </section>
+</div>
+
+<script>
+(function () {
+  const PEOPLE = [
+    { key: "orishi", name: "オリシ", color: "var(--ori)" },
+    { key: "pokoshi", name: "ぽこし", color: "var(--poko)" }
+  ];
+  const WD = ["日", "月", "火", "水", "木", "金", "土"];
+  const $ = (id) => document.getElementById(id);
+  const rows = new Map(); // date -> {orishi, pokoshi}
+  let cfg = null, ready = false, loaded = false, busy = false;
+  const heights = { orishi: 148, pokoshi: 159 }; // 身長(cm)で固定。BMIの計算に使う
+  let rangeDays = 90, listLimit = 30, delTimer = null;
+
+  const pad = (n) => String(n).padStart(2, "0");
+  const iso = (d) => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  const parse = (s) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+  const label = (s) => { const d = parse(s); return (d.getMonth() + 1) + "/" + d.getDate() + "(" + WD[d.getDay()] + ")"; };
+  const fullLabel = (s) => { const d = parse(s); return d.getFullYear() + "/" + (d.getMonth() + 1) + "/" + d.getDate() + "(" + WD[d.getDay()] + ")"; };
+  const num = (v) => (typeof v === "number" && isFinite(v) ? v : null);
+  const fmt = (v) => v.toFixed(1);
+  const bmi = (w, k) => { const h = num(heights[k]); return h ? w / ((h / 100) * (h / 100)) : null; };
+  const nameOf = (k) => PEOPLE.find((p) => p.key === k).name;
+  const colorOf = (k) => PEOPLE.find((p) => p.key === k).color;
+
+  function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function recall(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+  // ---- 初期状態 ----
+  $("date").value = iso(new Date());
+  const lastWho = recall("who") || "pokoshi";
+  ($("who-" + lastWho) || $("who-pokoshi")).checked = true;
+
+  function who() { return document.querySelector('input[name="who"]:checked').value; }
+  function setStatus(msg, cls) { const s = $("status"); s.textContent = msg; s.className = "status" + (cls ? " " + cls : ""); }
+  function notice(msg, err) { const n = $("notice"); n.textContent = msg; n.className = "notice" + (err ? " err" : ""); n.hidden = !msg; }
+
+  // フォームを今の人・日付の記録に合わせる
+  function syncForm(keepWeight) {
+    const r = rows.get($("date").value);
+    const v = r ? num(r[who()]) : null;
+    if (!keepWeight) $("weight").value = v != null ? fmt(v) : "";
+    $("save").textContent = v != null ? "上書き保存" : "記録する";
+    $("del").hidden = v == null || !ready;
+    $("del-hint").hidden = $("del").hidden;
+    disarmDel();
+    $("save").disabled = !ready || busy;
+    document.querySelectorAll("#rows tr").forEach((tr) => tr.classList.toggle("sel", tr.dataset.date === $("date").value));
+  }
+
+  // 人を選ぶ（記録する人・グラフ右端のBMI目盛りの両方が切り替わる）
+  function selectWho(k) {
+    $("who-" + k).checked = true;
+    store("who", k); syncForm(); setStatus(""); renderChart();
+  }
+  document.querySelectorAll('input[name="who"]').forEach((el) => el.addEventListener("change", () => selectWho(who())));
+  $("stats").addEventListener("click", (e) => { const t = e.target.closest(".stat[data-who]"); if (t) selectWho(t.dataset.who); });
+  $("stats").addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const t = e.target.closest(".stat[data-who]"); if (!t) return;
+    e.preventDefault(); selectWho(t.dataset.who);
+  });
+  $("date").addEventListener("change", () => { syncForm(); setStatus(""); });
+
+  $("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!ready || busy) return;
+    const date = $("date").value;
+    const w = Math.round(parseFloat($("weight").value) * 10) / 10;
+    if (!date) { setStatus("日付を入れてください。", "err"); return; }
+    if (!isFinite(w) || w < 20 || w > 200) { setStatus("体重は20〜200kgの数字で入れてください（例: 58.4）。", "err"); return; }
+    const k = who();
+    busy = true; $("save").disabled = true; setStatus("保存しています…");
+    try {
+      apply(await call({ action: "set", date: date, who: k, weight: w }));
+      setStatus(nameOf(k) + "の " + label(date) + " を " + fmt(w) + "kg で保存しました。", "ok");
+    } catch (err) {
+      handleWriteError(err);
+    } finally {
+      busy = false; syncForm(true);
+    }
+  });
+
+  function disarmDel() { clearTimeout(delTimer); const b = $("del"); b.classList.remove("armed"); b.textContent = "この日の記録を消す"; }
+  $("del").addEventListener("click", async () => {
+    const b = $("del");
+    if (!b.classList.contains("armed")) {
+      b.classList.add("armed"); b.textContent = "もう一度押すと消えます";
+      delTimer = setTimeout(disarmDel, 4000);
+      return;
+    }
+    disarmDel();
+    const date = $("date").value, k = who(), r = rows.get(date);
+    if (!r || !ready || busy) return;
+    busy = true; setStatus("消しています…");
+    try {
+      apply(await call({ action: "set", date: date, who: k, weight: null }));
+      $("weight").value = "";
+      setStatus(nameOf(k) + "の " + label(date) + " の記録を消しました。", "ok");
+    } catch (err) { handleWriteError(err); }
+    finally { busy = false; syncForm(true); }
+  });
+
+  function handleWriteError(err) {
+    if (err && err.code === "auth") {
+      setStatus("保存できませんでした。設定リンクが古いようです。ぽこしから新しい設定リンクをもらって開き直してください。", "err");
+    } else {
+      setStatus("保存できませんでした。通信状態を確かめて、もう一度押してください。", "err");
+    }
+  }
+
+  // ---- 範囲切り替え ----
+  $("range").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    rangeDays = Number(b.dataset.days);
+    store("range", String(rangeDays));
+    $("range").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    renderChart();
+  });
+  const savedRange = recall("range");
+  if (savedRange != null) {
+    const b = $("range").querySelector('[data-days="' + savedRange + '"]');
+    if (b) { rangeDays = Number(savedRange); $("range").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); }
+  }
+  $("more").addEventListener("click", () => { listLimit += 60; renderList(); });
+
+  // ---- 描画 ----
+  function sortedDates() { return Array.from(rows.keys()).sort(); }
+
+  function inRange() {
+    const dates = sortedDates();
+    if (!rangeDays) return dates;
+    const from = new Date(); from.setHours(0, 0, 0, 0); from.setDate(from.getDate() - rangeDays + 1);
+    const f = iso(from);
+    return dates.filter((d) => d >= f);
+  }
+
+  function renderStats(dates) {
+    $("stats").innerHTML = PEOPLE.map((p) => {
+      const pts = dates.map((d) => [d, num(rows.get(d)[p.key])]).filter((x) => x[1] != null);
+      const cls = p.key === "orishi" ? "ori" : "poko", on = p.key === who();
+      const open = '<div class="stat ' + cls + (on ? " on" : "") + '" data-who="' + p.key + '" tabindex="0" role="button" aria-pressed="' + on + '" aria-label="' + p.name + 'のBMIをグラフに出す">';
+      if (!pts.length) return open + '<div class="nm">' + p.name + '</div><div class="v">—</div><div class="d">この期間の記録なし</div></div>';
+      const last = pts[pts.length - 1], first = pts[0], diff = last[1] - first[1];
+      const ds = pts.length > 1 ? "期間内 " + (diff > 0 ? "+" : diff < 0 ? "−" : "±") + Math.abs(diff).toFixed(1) + "kg" : "記録1件";
+      const b = bmi(last[1], p.key);
+      return open + '<div class="nm">' + p.name + '</div><div class="v">' + fmt(last[1]) + '<small> kg</small>' + (b != null ? '<span class="bmi">BMI ' + fmt(b) + "</span>" : "") + '</div><div class="d">' + label(last[0]) + " ・ " + ds + "</div></div>";
+    }).join("");
+  }
+
+  function niceStep(span) {
+    const steps = [0.2, 0.5, 1, 2, 5, 10];
+    for (const s of steps) if (span / s <= 6) return s;
+    return 20;
+  }
+
+  function renderChart() {
+    const box = $("chart");
+    const dates = inRange();
+    renderStats(dates);
+    if (!loaded) return;
+    const series = PEOPLE.map((p) => ({ p: p, pts: dates.map((d) => ({ d: d, v: num(rows.get(d)[p.key]) })).filter((x) => x.v != null) }));
+    const all = series.flatMap((s) => s.pts);
+    if (!all.length) {
+      box.innerHTML = '<div class="empty">' + (rows.size ? "この期間の記録はありません。期間を広げてみてください。" : "まだ記録がありません。下の「記録する」で最初の体重を入れると、ここに折れ線グラフが出ます。") + "</div>";
+      return;
+    }
+    const W = Math.max(300, Math.round(box.clientWidth || 600)), H = Math.round(Math.min(300, Math.max(220, W * 0.55)));
+    const bk = who(), showBmi = num(heights[bk]) != null; // 選んでいる人のBMI目盛りを右端に出す
+    const m = { l: 40, r: showBmi ? 84 : 44, t: 24, b: 28 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    let vmin = Math.min(...all.map((x) => x.v)), vmax = Math.max(...all.map((x) => x.v));
+    if (vmax - vmin < 1) { const c = (vmax + vmin) / 2; vmin = c - 0.5; vmax = c + 0.5; }
+    const step = niceStep(vmax - vmin);
+    vmin = Math.floor((vmin - step * 0.3) / step) * step;
+    vmax = Math.ceil((vmax + step * 0.3) / step) * step;
+    const t0 = parse(dates[0]).getTime(), t1 = parse(dates[dates.length - 1]).getTime();
+    const tspan = Math.max(t1 - t0, 86400000);
+    const x = (d) => m.l + (dates.length === 1 ? iw / 2 : ((parse(d).getTime() - t0) / tspan) * iw);
+    const y = (v) => m.t + (1 - (v - vmin) / (vmax - vmin)) * ih;
+    let s = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="オリシとぽこしの体重の折れ線グラフ">';
+    // 横の目盛り
+    const dec = step < 1 ? 1 : 0;
+    for (let v = vmin; v <= vmax + 1e-9; v += step) {
+      const yy = y(v).toFixed(1);
+      s += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + yy + '" y2="' + yy + '" stroke="var(--line)" stroke-width="1"/>';
+      s += '<text x="' + (m.l - 6) + '" y="' + yy + '" dy="0.35em" text-anchor="end" font-size="11" fill="var(--muted)">' + v.toFixed(dec) + "</text>";
+      if (showBmi) s += '<text x="' + (W - 2) + '" y="' + yy + '" dy="0.35em" text-anchor="end" font-size="11" font-weight="700" fill="' + colorOf(bk) + '">' + fmt(bmi(v, bk)) + "</text>";
+    }
+    s += '<text x="' + (m.l - 6) + '" y="10" text-anchor="end" font-size="10" fill="var(--muted)">kg</text>';
+    if (showBmi) s += '<text x="' + (W - 2) + '" y="10" text-anchor="end" font-size="10" font-weight="700" fill="' + colorOf(bk) + '">' + nameOf(bk) + "のBMI</text>";
+    // 日付の目盛り（最大5つ）
+    const nTicks = Math.min(5, dates.length);
+    const used = new Set();
+    for (let i = 0; i < nTicks; i++) {
+      const idx = nTicks === 1 ? 0 : Math.round((i * (dates.length - 1)) / (nTicks - 1));
+      if (used.has(idx)) continue; used.add(idx);
+      const d = dates[idx], xx = x(d), dd = parse(d);
+      const anchor = nTicks === 1 ? "middle" : i === 0 ? "start" : i === nTicks - 1 ? "end" : "middle";
+      s += '<text x="' + xx.toFixed(1) + '" y="' + (H - 8) + '" text-anchor="' + anchor + '" font-size="11" fill="var(--muted)">' + (dd.getMonth() + 1) + "/" + dd.getDate() + "</text>";
+    }
+    // 線と点
+    series.forEach((sr) => {
+      if (!sr.pts.length) return;
+      const path = sr.pts.map((q, i) => (i ? "L" : "M") + x(q.d).toFixed(1) + " " + y(q.v).toFixed(1)).join(" ");
+      s += '<path d="' + path + '" fill="none" stroke="' + sr.p.color + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+      const showDots = sr.pts.length <= 60;
+      sr.pts.forEach((q, i) => {
+        const last = i === sr.pts.length - 1;
+        const cx = x(q.d).toFixed(1), cy = y(q.v).toFixed(1), tip = sr.p.name + " " + label(q.d) + " " + fmt(q.v) + "kg";
+        s += '<g class="pt" data-date="' + q.d + '" data-who="' + sr.p.key + '" tabindex="0" role="button" aria-label="' + tip + ' を直す・消す"><title>' + tip + "（タップで直す・消す）</title>";
+        s += '<circle cx="' + cx + '" cy="' + cy + '" r="12" fill="transparent"/>';
+        if (showDots || last) s += '<circle class="mark" cx="' + cx + '" cy="' + cy + '" r="' + (last ? 4.5 : 3) + '" fill="' + (last ? sr.p.color : "var(--surface)") + '" stroke="' + sr.p.color + '" stroke-width="2"/>';
+        s += "</g>";
+      });
+    });
+    // 最新値ラベル（重なりを避ける）
+    const ends = series.filter((sr) => sr.pts.length).map((sr) => { const q = sr.pts[sr.pts.length - 1]; return { sr: sr, x: x(q.d), y: y(q.v), v: q.v }; });
+    if (ends.length === 2 && Math.abs(ends[0].y - ends[1].y) < 16) {
+      const [a, b] = ends[0].y <= ends[1].y ? [ends[0], ends[1]] : [ends[1], ends[0]];
+      const mid = (a.y + b.y) / 2; a.ly = mid - 8; b.ly = mid + 8;
+    }
+    ends.forEach((e) => {
+      const ly = Math.max(m.t + 6, Math.min(H - m.b - 4, e.ly != null ? e.ly : e.y));
+      s += '<text x="' + Math.min(e.x + 8, W - 2).toFixed(1) + '" y="' + ly.toFixed(1) + '" dy="0.35em" font-size="12" font-weight="700" fill="' + e.sr.p.color + '"' + (e.x + 8 > W - m.r + 4 ? ' text-anchor="end"' : "") + ">" + fmt(e.v) + "</text>";
+    });
+    s += "</svg>";
+    box.innerHTML = s;
+  }
+
+  function renderList() {
+    const dates = sortedDates().reverse();
+    const body = $("rows");
+    if (!dates.length) { body.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);cursor:default">' + (loaded ? "まだ記録がありません" : "読み込み中…") + "</td></tr>"; $("more").hidden = true; return; }
+    body.innerHTML = dates.slice(0, listLimit).map((d) => {
+      const r = rows.get(d);
+      const cell = (k) => { const v = num(r[k]); if (v == null) return '<td class="none">—</td>'; const b = bmi(v, k); return "<td>" + fmt(v) + (b != null ? '<span class="b">BMI ' + fmt(b) + "</span>" : "") + "</td>"; };
+      return '<tr data-date="' + d + '"' + (d === $("date").value ? ' class="sel"' : "") + "><td>" + fullLabel(d) + "</td>" + cell("orishi") + cell("pokoshi") + "</tr>";
+    }).join("");
+    $("more").hidden = dates.length <= listLimit;
+  }
+
+  // その日・その人の記録を入力欄に出す（直す・消す用）
+  function openEntry(date, k) {
+    $("date").value = date;
+    if (k) $("who-" + k).checked = true;
+    store("who", who());
+    syncForm(); setStatus(""); renderChart();
+    document.getElementById("h-input").scrollIntoView({ behavior: "smooth", block: "start" });
+    $("weight").focus({ preventScroll: true });
+  }
+
+  $("rows").addEventListener("click", (e) => {
+    const tr = e.target.closest("tr[data-date]"); if (!tr) return;
+    const r = rows.get(tr.dataset.date);
+    // 押した列の人に合わせる（記録がある方）
+    const td = e.target.closest("td"), ci = td ? Array.from(tr.children).indexOf(td) : 0;
+    let k = null;
+    if (ci === 1) k = "orishi";
+    else if (ci === 2) k = "pokoshi";
+    else if (r && num(r[who()]) == null) { const o = who() === "orishi" ? "pokoshi" : "orishi"; if (num(r[o]) != null) k = o; }
+    openEntry(tr.dataset.date, k);
+  });
+
+  $("chart").addEventListener("click", (e) => {
+    const g = e.target.closest(".pt"); if (!g) return;
+    openEntry(g.dataset.date, g.dataset.who);
+  });
+  $("chart").addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const g = e.target.closest(".pt"); if (!g) return;
+    e.preventDefault();
+    openEntry(g.dataset.date, g.dataset.who);
+  });
+
+  function renderAll() { renderList(); renderChart(); syncForm(document.activeElement === $("weight") && $("weight").value !== ""); }
+
+  let rt = null;
+  window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(renderChart, 150); });
+
+  // ---- データ接続 ----
+  renderList(); renderStats([]); syncForm();
+  $("save").disabled = true;
+
+  // 記録はGoogleスプレッドシート（Apps Script）に保存する。
+  // 保存先と合言葉は設定リンクの # の後ろ（#c=保存先ID.合言葉）で受け取り、この端末にも覚えておく。
+  // # はサーバーに送られないので、リポジトリにもGitHubにも残らない。
+  function readConfig() {
+    const m = location.hash.match(/c=([\w-]+)\.([\w-]+)/);
+    if (m) { store("cfg", m[1] + "." + m[2]); return { id: m[1], k: m[2] }; }
+    const s = recall("cfg"), n = s && s.match(/^([\w-]+)\.([\w-]+)$/);
+    return n ? { id: n[1], k: n[2] } : null;
+  }
+
+  async function call(body) {
+    const url = "https://script.google.com/macros/s/" + cfg.id + "/exec";
+    const res = body
+      ? await fetch(url, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(Object.assign({ k: cfg.k }, body)) })
+      : await fetch(url + "?k=" + encodeURIComponent(cfg.k) + "&t=" + Date.now());
+    const j = await res.json();
+    if (!j.ok) { const e = new Error(j.error); e.code = j.error; throw e; }
+    return j.rows;
+  }
+
+  function apply(list) {
+    rows.clear();
+    list.forEach((r) => {
+      if (r && /^\d{4}-\d{2}-\d{2}$/.test(r.date) && (num(r.orishi) != null || num(r.pokoshi) != null)) rows.set(r.date, r);
+    });
+    store("rows", JSON.stringify(list));
+    loaded = true;
+    renderAll();
+  }
+
+  async function load() {
+    if (!cfg || busy) return;
+    try {
+      const list = await call();
+      if (busy) return; // 読み込み中に保存した場合は、保存の結果を優先する
+      ready = true; notice("");
+      apply(list);
+    } catch (err) {
+      if (err && err.code === "auth") { ready = false; notice("記録につながりませんでした。設定リンクが古いようです。ぽこしから新しい設定リンクをもらって開き直してください。", true); }
+      else notice("記録を読み込めませんでした。通信状態を確かめて、開き直してください。" + (rows.size ? "（下はこの端末に残っている前回の記録です）" : ""), true);
+      loaded = true; renderAll();
+    }
+  }
+
+  // 開いたままのページで新しい設定リンクを開いたときも、読み直す
+  window.addEventListener("hashchange", () => { const c = readConfig(); if (c) { cfg = c; load(); } });
+
+  cfg = readConfig();
+  if (!cfg) {
+    loaded = true;
+    notice("このページはまだ設定されていません。ぽこしから送られた「設定リンク」を開いてください。", true);
+    renderAll();
+  } else {
+    try { const cached = JSON.parse(recall("rows") || "null"); if (Array.isArray(cached)) apply(cached); } catch (e) {}
+    load();
+    // アプリに戻ってきたときと、開いたままのときは2分ごとに、相手の記録を読み直す
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") load(); });
+    setInterval(() => { if (document.visibilityState === "visible") load(); }, 120000);
+  }
+})();
+</script>
+</body>
+</html>
