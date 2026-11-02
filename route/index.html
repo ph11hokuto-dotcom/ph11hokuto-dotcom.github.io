@@ -63,6 +63,12 @@
     align-self: flex-start; margin-top: 6px; text-decoration: none; font-weight: 700; font-size: .85rem;
     padding: 9px 18px; border-radius: 999px; background: var(--surface); color: var(--accent); border: 2px solid var(--accent);
   }
+  /* 画面に収まりきらないときだけ、余白とすき間をさらに詰める（文字の大きさは変えない） */
+  body.compact { padding-top: calc(8px + env(safe-area-inset-top)); padding-bottom: calc(4px + env(safe-area-inset-bottom)); }
+  body.compact header { margin-bottom: 8px; }
+  body.compact .list { gap: 7px; }
+  body.compact .card { padding: 9px 18px 8px; gap: 1px; }
+  body.compact footer { margin-top: 6px; }
   footer { margin-top: 10px; font-size: .78rem; color: var(--text-muted); line-height: 1.7; text-align: center; }
 </style>
 </head>
@@ -184,12 +190,28 @@
     });
   }
 
+  // 画面に収まっているかを確かめて、はみ出すときは詰めた表示にする
+  function fitToScreen() {
+    var body = document.body;
+    body.classList.remove('compact');
+    if (body.scrollHeight > body.clientHeight + 1) body.classList.add('compact');
+  }
+  window.addEventListener('resize', fitToScreen);
+  window.addEventListener('orientationchange', fitToScreen);
+
+  // iPhoneで画面を引っぱったときの揺れを止める（収まっているときはスクロールそのものを止める）
+  document.addEventListener('touchmove', function (e) {
+    var body = document.body;
+    if (body.scrollHeight <= body.clientHeight + 1) e.preventDefault();
+  }, { passive: false });
+
   fetch('data.json?t=' + Date.now(), { cache: 'no-store' })
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function (d) { render(d.stores || {}); })
+    .then(function (d) { render(d.stores || {}); fitToScreen(); })
     .catch(function () {
       document.getElementById('dataNote').textContent = 'データを読み込めませんでした。通信状態を確かめて、開き直してください。';
       render({});
+      fitToScreen();
     });
 </script>
 </body>
