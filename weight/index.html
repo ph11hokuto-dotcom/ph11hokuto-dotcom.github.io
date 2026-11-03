@@ -47,44 +47,48 @@
 /* 1画面に収める: ページは固定し、グラフが残りの高さを使う。履歴は下から出す一覧の中だけスクロール */
 html { height: 100%; overflow: hidden; overscroll-behavior: none; background: var(--bg); -webkit-text-size-adjust: 100%; }
 body { position: fixed; inset: 0; margin: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: none; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
-.wrap { max-width: 640px; height: 100%; margin: 0 auto; padding: calc(12px + env(safe-area-inset-top)) 16px calc(12px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 10px; }
+.wrap { max-width: 640px; height: 100%; margin: 0 auto; padding: calc(10px + env(safe-area-inset-top)) 12px calc(8px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 8px; }
 /* ホーム画面アプリで開いたとき、タイトルが時計・電池の表示に重ならないよう少し下げる */
-html.standalone .wrap { padding-top: max(calc(env(safe-area-inset-top) + 8px), 52px); }
+html.standalone .wrap { padding-top: max(calc(env(safe-area-inset-top) + 4px), 24px); }
 header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 header h1 { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; margin: 0; letter-spacing: .02em; white-space: nowrap; }
 .btn-hist { flex: none; padding: 6px 12px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font-family: var(--font-display); font-weight: 700; font-size: .85rem; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; min-width: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px; min-width: 0; }
 .card h2 { font-family: var(--font-display); font-size: 1.05rem; margin: 0 0 8px; }
 .card.grow { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
 .notice { font-size: .85rem; padding: 10px 12px; border-radius: 10px; background: var(--poko-soft); color: var(--fg); }
 .notice.err { background: var(--ori-soft); }
 
 /* 入力 */
-.who { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.who { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
 .who input { position: absolute; opacity: 0; pointer-events: none; }
-.who label { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 10px; border: 2px solid var(--line); font-family: var(--font-display); font-weight: 700; cursor: pointer; }
+.who label { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 6px; border-radius: 10px; border: 2px solid var(--line); font-family: var(--font-display); font-weight: 700; cursor: pointer; }
 .who label .dot { width: 10px; height: 10px; border-radius: 50%; }
 .who input:checked + label.ori { border-color: var(--ori); background: var(--ori-soft); }
 .who input:checked + label.poko { border-color: var(--poko); background: var(--poko-soft); }
 .who input:focus-visible + label { outline: 2px solid var(--fg); outline-offset: 2px; }
-.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+/* 「日付」「体重」の見出しは、見ればわかるので画面には出さない（読み上げ用に残す） */
+.field > span:first-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .field span { font-size: .78rem; color: var(--muted); letter-spacing: .04em; }
-.field input { font: inherit; font-size: 1.1rem; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); width: 100%; min-width: 0; font-variant-numeric: tabular-nums; }
+.field input { font: inherit; font-size: 1.05rem; padding: 8px 10px; height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); width: 100%; min-width: 0; font-variant-numeric: tabular-nums; }
 .field input:focus-visible { outline: 2px solid var(--poko); outline-offset: 1px; }
 .unit { position: relative; }
 .unit::after { content: "kg"; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: .9rem; pointer-events: none; }
 .unit input { padding-right: 36px; }
-.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+.actions { display: flex; gap: 8px; margin-top: 8px; align-items: stretch; }
 button { font: inherit; cursor: pointer; border-radius: 10px; }
-.btn-main { flex: 1 1 160px; padding: 12px; border: none; background: var(--fg); color: var(--surface); font-family: var(--font-display); font-weight: 700; font-size: 1rem; }
+.btn-main { flex: 1 1 auto; padding: 10px; border: none; background: var(--fg); color: var(--surface); font-family: var(--font-display); font-weight: 700; font-size: 1rem; }
 .btn-main:disabled { opacity: .45; cursor: default; }
-.btn-del { padding: 11px 14px; border: 1px solid var(--line); background: transparent; color: var(--danger); font-size: .9rem; }
+.btn-del { flex: none; padding: 8px 14px; white-space: nowrap; border: 1px solid var(--line); background: transparent; color: var(--danger); font-size: .9rem; }
 .btn-del.armed { background: var(--danger); color: var(--surface); border-color: var(--danger); }
 button:focus-visible { outline: 2px solid var(--poko); outline-offset: 2px; }
-.status { font-size: .8rem; min-height: 1.4em; margin-top: 6px; color: var(--muted); }
-.status.ok { color: var(--ok); }
-.status.err { color: var(--danger); }
+/* 保存したときのお知らせは、画面の下に少しだけ出して消す（場所を取らないように） */
+.status { position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 5; width: max-content; max-width: calc(100% - 32px); padding: 8px 14px; border-radius: 999px; background: var(--fg); color: var(--surface); font-size: .82rem; text-align: center; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.status.show { opacity: 1; }
+.status.ok { background: var(--ok); color: #fff; }
+.status.err { background: var(--danger); color: #fff; }
 
 /* グラフ */
 .chart-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
@@ -92,22 +96,22 @@ button:focus-visible { outline: 2px solid var(--poko); outline-offset: 2px; }
 .range { display: flex; gap: 4px; background: var(--bg); padding: 3px; border-radius: 9px; }
 .range button { border: none; background: transparent; color: var(--muted); padding: 4px 10px; font-size: .8rem; border-radius: 7px; }
 .range button[aria-pressed="true"] { background: var(--surface); color: var(--fg); font-weight: 700; }
-.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-.stat { border-radius: 10px; padding: 8px 10px; min-width: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
+.stat { border-radius: 10px; padding: 5px 8px; min-width: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .stat.ori.on { box-shadow: inset 0 0 0 2px var(--ori); }
 .stat.poko.on { box-shadow: inset 0 0 0 2px var(--poko); }
 .stat:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
 .stat.ori { background: var(--ori-soft); }
 .stat.poko { background: var(--poko-soft); }
-.stat .nm { font-size: .78rem; font-family: var(--font-display); font-weight: 700; }
+.stat .nm { font-size: .75rem; line-height: 1.3; font-family: var(--font-display); font-weight: 700; }
 .stat.ori .nm { color: var(--ori); }
 .stat.poko .nm { color: var(--poko); }
-.stat .v { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat .v { font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; line-height: 1.3; }
 .stat .v small { font-size: .75rem; font-weight: 400; color: var(--muted); }
-.stat .v .bmi { font-size: .85rem; font-weight: 700; margin-left: 8px; white-space: nowrap; }
+.stat .v .bmi { font-size: .8rem; font-weight: 700; margin-left: 4px; }
 .stat.ori .v .bmi { color: var(--ori); }
 .stat.poko .v .bmi { color: var(--poko); }
-.stat .d { font-size: .75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.stat .d { font-size: .7rem; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
 #chart { width: 100%; flex: 1 1 auto; min-height: 120px; position: relative; }
 #chart svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 #chart .pt { cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -139,7 +143,7 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
 .more { margin-top: 10px; width: 100%; padding: 9px; border: 1px solid var(--line); background: transparent; color: var(--fg); }
 @media (prefers-reduced-motion: no-preference) { .btn-main, .who label { transition: background .15s, border-color .15s; } }
 /* 1画面に入りきらない低い画面（古い小さいiPhoneなど）だけ、重ならずに下へスクロールする */
-@media (max-height: 620px), (max-width: 340px) {
+@media (max-height: 540px) {
   .wrap { height: auto; }
   .card.grow { flex: none; }
   #chart { flex: none; height: 200px; }
@@ -185,7 +189,7 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
       </div>
       <div class="actions">
         <button type="submit" class="btn-main" id="save">記録する</button>
-        <button type="button" class="btn-del" id="del" hidden>この日の記録を消す</button>
+        <button type="button" class="btn-del" id="del" hidden>消す</button>
       </div>
       <div class="status" id="status" aria-live="polite"></div>
     </form>
@@ -242,7 +246,12 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
   ($("who-" + lastWho) || $("who-pokoshi")).checked = true;
 
   function who() { return document.querySelector('input[name="who"]:checked').value; }
-  function setStatus(msg, cls) { const s = $("status"); s.textContent = msg; s.className = "status" + (cls ? " " + cls : ""); }
+  let stTimer = null;
+  function setStatus(msg, cls) {
+    const s = $("status"); clearTimeout(stTimer);
+    s.textContent = msg; s.className = "status" + (cls ? " " + cls : "") + (msg ? " show" : "");
+    if (msg && cls) stTimer = setTimeout(() => s.classList.remove("show"), cls === "err" ? 6000 : 3000);
+  }
   function notice(msg, err) { const n = $("notice"); n.textContent = msg; n.className = "notice" + (err ? " err" : ""); n.hidden = !msg; }
 
   // フォームを今の人・日付の記録に合わせる
@@ -290,11 +299,11 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
     }
   });
 
-  function disarmDel() { clearTimeout(delTimer); const b = $("del"); b.classList.remove("armed"); b.textContent = "この日の記録を消す"; }
+  function disarmDel() { clearTimeout(delTimer); const b = $("del"); b.classList.remove("armed"); b.textContent = "消す"; }
   $("del").addEventListener("click", async () => {
     const b = $("del");
     if (!b.classList.contains("armed")) {
-      b.classList.add("armed"); b.textContent = "もう一度押すと消えます";
+      b.classList.add("armed"); b.textContent = "もう一度押す";
       delTimer = setTimeout(disarmDel, 4000);
       return;
     }
@@ -351,15 +360,15 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
       const open = '<div class="stat ' + cls + (on ? " on" : "") + '" data-who="' + p.key + '" tabindex="0" role="button" aria-pressed="' + on + '" aria-label="' + p.name + 'のBMIをグラフに出す">';
       if (!pts.length) return open + '<div class="nm">' + p.name + '</div><div class="v">—</div><div class="d">この期間の記録なし</div></div>';
       const last = pts[pts.length - 1], first = pts[0], diff = last[1] - first[1];
-      const ds = pts.length > 1 ? "期間内 " + (diff > 0 ? "+" : diff < 0 ? "−" : "±") + Math.abs(diff).toFixed(1) + "kg" : "記録1件";
+      const ds = pts.length > 1 ? (diff > 0 ? "+" : diff < 0 ? "−" : "±") + Math.abs(diff).toFixed(1) + "kg" : "記録1件";
       const b = bmi(last[1], p.key);
       return open + '<div class="nm">' + p.name + '</div><div class="v">' + fmt(last[1]) + '<small> kg</small>' + (b != null ? '<span class="bmi">BMI ' + fmt(b) + "</span>" : "") + '</div><div class="d">' + label(last[0]) + " ・ " + ds + "</div></div>";
     }).join("");
   }
 
-  function niceStep(span) {
+  function niceStep(span, maxTicks) {
     const steps = [0.2, 0.5, 1, 2, 5, 10];
-    for (const s of steps) if (span / s <= 6) return s;
+    for (const s of steps) if (span / s <= maxTicks) return s;
     return 20;
   }
 
@@ -376,11 +385,11 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
     }
     const W = Math.max(260, Math.round(box.clientWidth || 600)), H = Math.max(120, Math.round(box.clientHeight || 240)); // 枠の大きさに合わせる
     const bk = who(), showBmi = num(heights[bk]) != null; // 選んでいる人のBMI目盛りを右端に出す
-    const m = { l: 40, r: showBmi ? 84 : 44, t: 24, b: 28 };
+    const m = { l: 34, r: showBmi ? 36 : 12, t: 18, b: 22 };
     const iw = W - m.l - m.r, ih = H - m.t - m.b;
     let vmin = Math.min(...all.map((x) => x.v)), vmax = Math.max(...all.map((x) => x.v));
     if (vmax - vmin < 1) { const c = (vmax + vmin) / 2; vmin = c - 0.5; vmax = c + 0.5; }
-    const step = niceStep(vmax - vmin);
+    const step = niceStep(vmax - vmin, Math.max(3, Math.floor(ih / 30))); // 縦の目盛りは高さに合わせた数まで
     vmin = Math.floor((vmin - step * 0.3) / step) * step;
     vmax = Math.ceil((vmax + step * 0.3) / step) * step;
     const t0 = parse(dates[0]).getTime(), t1 = parse(dates[dates.length - 1]).getTime();
@@ -399,7 +408,7 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
     s += '<text x="' + (m.l - 6) + '" y="10" text-anchor="end" font-size="10" fill="var(--muted)">kg</text>';
     if (showBmi) s += '<text x="' + (W - 2) + '" y="10" text-anchor="end" font-size="10" font-weight="700" fill="' + colorOf(bk) + '">' + nameOf(bk) + "のBMI</text>";
     // 日付の目盛り（最大5つ）
-    const nTicks = Math.min(5, dates.length);
+    const nTicks = Math.min(5, dates.length, Math.max(2, Math.floor(iw / 62))); // 日付が重ならない数まで
     const used = new Set();
     for (let i = 0; i < nTicks; i++) {
       const idx = nTicks === 1 ? 0 : Math.round((i * (dates.length - 1)) / (nTicks - 1));
