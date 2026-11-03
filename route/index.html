@@ -13,7 +13,7 @@
     --bg-a: #fff2d6; --bg-b: #ffe1ec; --bg-c: #dcefff;
     --surface: #fffaf3; --text: #3a2b3f; --text-muted: #8d7387; --accent: #ff5b8c;
     --status-normal: #2fae63; --status-caution: #ef8c2c; --status-closed: #ef4f63; --status-crowded: #8a5fd6;
-    --card-asakusa: #ffe9c7; --card-omiya: #dff5e3; --card-ikebukuro: #ffdce6; --card-takadanobaba: #dcecff;
+    --card-asakusa: #ffe9c7; --card-omiya: #dff5e3; --card-ikebukuro: #ffdce6; --card-takadanobaba: #dcecff; --card-shinjuku: #ebe2ff;
     --shadow: 0 10px 30px rgba(180, 90, 120, .18);
   }
   @media (prefers-color-scheme: dark) {
@@ -21,7 +21,7 @@
       --bg-a: #241832; --bg-b: #2b1830; --bg-c: #16212f;
       --surface: #1c1420; --text: #f3ecf7; --text-muted: #b6a3c2; --accent: #ff8fb2;
       --status-normal: #4bcf8f; --status-caution: #ffab5c; --status-closed: #ff8a97; --status-crowded: #b79bf0;
-      --card-asakusa: #3a2c1c; --card-omiya: #1d3324; --card-ikebukuro: #3a1f2a; --card-takadanobaba: #1a2b40;
+      --card-asakusa: #3a2c1c; --card-omiya: #1d3324; --card-ikebukuro: #3a1f2a; --card-takadanobaba: #1a2b40; --card-shinjuku: #2c2242;
       --shadow: 0 10px 30px rgba(0, 0, 0, .45);
     }
   }
@@ -52,6 +52,10 @@
   .card[data-store="omiya"] { background: var(--card-omiya); }
   .card[data-store="ikebukuro"] { background: var(--card-ikebukuro); }
   .card[data-store="takadanobaba"] { background: var(--card-takadanobaba); }
+  .card[data-store="shinjuku"] { background: var(--card-shinjuku); }
+  /* 全店共通の営業時間・ルートセットの時間（店ごとのカードには違うところだけ出す） */
+  .common { font-size: .8rem; color: var(--text-muted); line-height: 1.5; margin: 6px 0 0; padding: 6px 12px; border-radius: 14px; background: var(--surface); opacity: .9; font-variant-numeric: tabular-nums; }
+  .card-line.diff { color: var(--text); font-weight: 600; }
   .card-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
   .store-name { font-weight: 700; font-size: 1.2rem; }
   .badge { font-size: .78rem; font-weight: 700; padding: 5px 13px; border-radius: 999px; color: #fff; white-space: nowrap; }
@@ -71,6 +75,9 @@
   body.compact .list { gap: 7px; }
   body.compact .card { padding: 9px 18px 8px; gap: 1px; }
   body.compact footer { margin-top: 6px; }
+  body.compact .app-title { font-size: 1.4rem; margin-bottom: 2px; }
+  body.compact .common { margin-top: 4px; padding: 4px 12px; }
+  body.compact .badge { padding: 3px 11px; }
   /* ホーム画面のアプリで開いたときは、上下の余白を少し広めにとる（上のぼかしを避ける） */
   html.standalone body { padding-top: calc(28px + env(safe-area-inset-top)); padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
   html.standalone body.compact { padding-top: calc(12px + env(safe-area-inset-top)); padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
@@ -84,10 +91,11 @@
   <header>
     <p class="app-title">ルートチェンジ・カレンダー</p>
     <p class="app-sub" id="dataNote">読み込み中です…</p>
+    <p class="common">共通 営業 平日10:00〜23:00／土日祝〜21:00<br>セット 初日17:00 close／最終日18:30 open</p>
   </header>
   <div class="list" id="cardList"></div>
   <footer>
-    NOBOROCK 4店舗・AIが毎週公式サイトを確認
+    NOBOROCK 5店舗・共通と違うところは太字・AIが毎週確認
   </footer>
 </div>
 
@@ -96,9 +104,13 @@
     asakusa: { name: '浅草店', url: 'https://noborock-climbing.com/program/%E6%B5%85%E8%8D%89%E5%BA%97/' },
     omiya: { name: '大宮店', url: 'https://noborock-climbing.com/program/omiya/' },
     ikebukuro: { name: '池袋店', url: 'https://noborock-climbing.com/program/ikebukuro/' },
-    takadanobaba: { name: '高田馬場店', url: 'https://noborock-climbing.com/program/takadanobaba/' }
+    takadanobaba: { name: '高田馬場店', url: 'https://noborock-climbing.com/program/takadanobaba/' },
+    shinjuku: { name: '新宿店', url: 'https://noborock-climbing.com/program/%e6%96%b0%e5%ae%bf%e5%ba%97/' }
   };
-  var STORE_ORDER = ['omiya', 'ikebukuro', 'asakusa', 'takadanobaba'];
+  var STORE_ORDER = ['omiya', 'ikebukuro', 'asakusa', 'takadanobaba', 'shinjuku'];
+  // 上の「全店共通」の欄と同じ値。これと違う店だけ、カードに表示する
+  var STD = { weekday: '10:00〜23:00', weekend: '10:00〜21:00', firstDayNote: '17:00〜 close', lastDayNote: '18:30〜 open' };
+  function sameNote(a, b) { return (a || '').replace(/\s+/g, '') === b.replace(/\s+/g, ''); }
   var WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 
   function daysBetween(a, b) { return Math.floor((b - a) / 86400000); }
@@ -179,20 +191,27 @@
         else if (nextActive && daysUntilStart > 0 && daysUntilStart <= 7) { badgeEl.classList.add('caution'); badgeEl.textContent = '次回まで1週間以内'; }
         else { badgeEl.classList.add('normal'); badgeEl.textContent = '通常'; }
 
-        if (data.regularHours) lines.push('営業 平日' + data.regularHours.weekday + '／土日祝' + data.regularHours.weekend.replace(/^10:00/, ''));
         // 1画面に収めるため、前回と次回は1行にまとめる
         lines.push('前回 ' + formatMDW(lastSet) + (lastSetFromPlan ? '※' : '') + '／次回 ' +
           (nextActive ? formatMDW(next.startDate) + '〜' + formatMDW(next.endDate) : '未確認'));
         if (lastSetFromPlan) lines.push('※前回は予定日から自動表示');
+        // 営業時間・初日／最終日の時間は、全店共通と違うときだけ出す
+        var h = data.regularHours, hourParts = [];
+        if (h && h.weekday && h.weekday !== STD.weekday) hourParts.push('平日' + h.weekday);
+        if (h && h.weekend && h.weekend !== STD.weekend) hourParts.push('土日祝' + h.weekend);
+        if (hourParts.length) lines.push({ text: '営業 ' + hourParts.join('／'), diff: true });
         if (nextActive) {
           var subParts = [];
-          if (next.firstDayNote) subParts.push('初日' + next.firstDayNote.replace(/\s+/g, ''));
-          if (next.lastDayNote) subParts.push('最終日' + next.lastDayNote.replace(/\s+/g, ''));
-          if (subParts.length) lines.push(subParts.join('／'));
+          if (next.firstDayNote && !sameNote(next.firstDayNote, STD.firstDayNote)) subParts.push('初日' + next.firstDayNote.replace(/\s+/g, ''));
+          if (next.lastDayNote && !sameNote(next.lastDayNote, STD.lastDayNote)) subParts.push('最終日' + next.lastDayNote.replace(/\s+/g, ''));
+          if (subParts.length) lines.push({ text: subParts.join('／'), diff: true });
         }
-        if (data.notice && data.notice.date && data.notice.label) lines.push('お知らせ ' + formatMDW(data.notice.date) + ' ' + data.notice.label);
+        if (data.notice && data.notice.date && data.notice.label) lines.push({ text: 'お知らせ ' + formatMDW(data.notice.date) + ' ' + data.notice.label, diff: true });
       }
-      lines.forEach(function (line) { card.appendChild(textEl('div', 'card-line', line)); });
+      lines.forEach(function (line) {
+        var isDiff = typeof line === 'object';
+        card.appendChild(textEl('div', 'card-line' + (isDiff ? ' diff' : ''), isDiff ? line.text : line));
+      });
       list.appendChild(card);
     });
   }

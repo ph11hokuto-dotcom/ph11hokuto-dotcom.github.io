@@ -59,6 +59,20 @@
         "date": "2026-11-24",
         "label": "18:00 close"
       }
+    },
+    "shinjuku": {
+      "lastChecked": "2026-11-03 08:58",
+      "nextRouteSet": {
+        "startDate": "2026-11-23",
+        "endDate": "2026-11-25",
+        "firstDayNote": "17:00〜 close",
+        "lastDayNote": "18:30〜 open"
+      },
+      "prevRouteSet": "2026-10-27",
+      "regularHours": {
+        "weekday": "10:00〜23:00",
+        "weekend": "10:00〜21:00"
+      }
     }
   }
 }
