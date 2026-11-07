@@ -27,6 +27,11 @@ h1{font-size:1.35rem;margin:2px 0 0;letter-spacing:.06em}
 .lead{color:var(--sub);font-size:.82rem;margin:0 0 12px}
 .search{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0 6px}
 input[type=search],input[type=text],input[type=date],select,textarea{width:100%;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+input,select,textarea{max-width:100%;min-width:0}
+input[type=search]::placeholder{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-height:44px;text-align:left}
+input[type=date]::-webkit-date-and-time-value{text-align:left}
+.card{min-width:0;overflow-wrap:anywhere}
 textarea{min-height:64px;resize:vertical}
 .filters{display:flex;flex-direction:column;gap:6px;margin:8px 0 4px}
 .frow{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;align-items:center}
@@ -87,7 +92,7 @@ a{color:var(--accent)}
   <section id="vList">
     <h1>ボドゲ目録</h1>
     <p class="lead" id="lead"></p>
-    <div class="search"><input type="search" id="q" placeholder="名前・ジャンルで探す（例: 2人、協力、トリテ）" autocomplete="off"></div>
+    <div class="search"><input type="search" id="q" placeholder="例: 2人、協力、トリテ" autocomplete="off"></div>
     <div class="filters">
       <div class="frow" id="fP"><span class="flabel">人数</span></div>
       <div class="frow" id="fT"><span class="flabel">時間</span></div>
