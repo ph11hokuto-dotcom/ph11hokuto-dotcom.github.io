@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ボドゲ目録">
+<meta name="theme-color" content="#f3efe6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1c1f24" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>ボドゲ目録</title>
+<style>
+:root{--bg:#f3efe6;--card:#fffdf8;--ink:#2b2a27;--sub:#6f6a60;--line:#e2dccf;--accent:#1f5fa8;--on-accent:#fff;--btn:#ebe5d8;--shadow:#e2dccf;
+--t1:#e8f1fb;--t2:#fdf0e1;--t3:#eaf6ec;--t4:#f6ecf7;--t5:#fbf6dc;--good:#2e7d4f}
+@media (prefers-color-scheme:dark){:root{--bg:#1c1f24;--card:#252a31;--ink:#ece8df;--sub:#a9a397;--line:#3a414b;--accent:#7fb2ec;--on-accent:#10161d;--btn:#313842;--shadow:#14171b;
+--t1:#22303f;--t2:#3a2f22;--t3:#233529;--t4:#33283a;--t5:#36331f;--good:#7fd1a0}}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html{background:var(--bg);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",sans-serif;line-height:1.65;font-size:15px}
+button,input,select,textarea{font-family:inherit;color:inherit}
+main{max-width:680px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 16px calc(90px + env(safe-area-inset-bottom))}
+html.standalone main{padding-top:max(calc(env(safe-area-inset-top) + 16px),60px)}
+h1{font-size:1.35rem;margin:2px 0 0;letter-spacing:.06em}
+.lead{color:var(--sub);font-size:.82rem;margin:0 0 12px}
+.search{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0 6px}
+input[type=search],input[type=text],input[type=date],select,textarea{width:100%;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+textarea{min-height:64px;resize:vertical}
+.filters{display:flex;flex-direction:column;gap:6px;margin:8px 0 4px}
+.frow{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;align-items:center}
+.frow::-webkit-scrollbar{display:none}
+.flabel{font-size:.75rem;color:var(--sub);flex:0 0 auto;width:2.6em}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:var(--btn);border-radius:999px;padding:5px 12px;font-size:.84rem;cursor:pointer;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.meta{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;color:var(--sub);margin:8px 0}
+.meta select{width:auto;font-size:.82rem;padding:4px 8px}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{display:block;width:100%;text-align:left;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--card);cursor:pointer;box-shadow:0 1px 0 var(--shadow)}
+.item .nm{font-weight:700;font-size:1rem;line-height:1.4}
+.item .one{font-size:.82rem;color:var(--sub);margin-top:2px}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.tag{font-size:.72rem;border-radius:6px;padding:1px 7px;background:var(--btn);white-space:nowrap}
+.tag.p{background:var(--t1)}.tag.t{background:var(--t2)}.tag.g{background:var(--t3)}.tag.w{background:var(--t5)}.tag.played{background:var(--t4)}
+.empty{color:var(--sub);text-align:center;padding:30px 0}
+/* 下のタブ */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+.tabs button{flex:1;max-width:220px;border:none;background:none;padding:10px 0 8px;font-size:.8rem;color:var(--sub);cursor:pointer}
+.tabs button .ic{display:block;font-size:1.2rem;line-height:1.1}
+.tabs button[aria-current="true"]{color:var(--accent);font-weight:700}
+/* 詳細 */
+.sheet{position:fixed;inset:0;z-index:30;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.sheet .in{max-width:680px;margin:0 auto;padding:calc(10px + env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom))}
+html.standalone .sheet .in{padding-top:max(calc(env(safe-area-inset-top) + 10px),54px)}
+.back{border:none;background:var(--btn);border-radius:999px;padding:6px 14px;font-size:.88rem;cursor:pointer}
+.dtitle{font-size:1.35rem;margin:12px 0 0;line-height:1.35}
+.den{color:var(--sub);font-size:.82rem}
+.card{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:12px 0}
+.card h3{margin:0 0 6px;font-size:.98rem;display:flex;gap:6px;align-items:center}
+.c1{background:var(--t1)}.c2{background:var(--t2)}.c3{background:var(--t3)}.c4{background:var(--t4)}.c5{background:var(--t5)}.c0{background:var(--card)}
+.card p{margin:4px 0}
+.card ol,.card ul{margin:4px 0;padding-left:1.3em}
+.card li{margin:3px 0}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center}
+.grid div{background:var(--card);border-radius:8px;padding:6px 2px;font-size:.78rem;color:var(--sub)}
+.grid b{display:block;color:var(--ink);font-size:.95rem}
+.note{font-size:.75rem;color:var(--sub)}
+.btn{border:1px solid var(--line);background:var(--btn);border-radius:10px;padding:9px 14px;font-size:.92rem;cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:700}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+label.f{display:block;font-size:.78rem;color:var(--sub);margin:8px 0 3px}
+.log{border-top:1px dashed var(--line);padding:8px 0;font-size:.88rem}
+.log:first-child{border-top:none}
+.log .d{font-weight:700}
+.log .x{float:right;border:none;background:none;color:var(--sub);font-size:.78rem;cursor:pointer}
+a{color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:.85rem;z-index:50;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.stat{display:flex;justify-content:space-between;border-top:1px dashed var(--line);padding:6px 0;font-size:.9rem;cursor:pointer}
+.stat:first-child{border-top:none}
+</style>
+</head>
+<body>
+<script>if(window.navigator.standalone||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches))document.documentElement.classList.add('standalone');</script>
+<main>
+  <section id="vList">
+    <h1>ボドゲ目録</h1>
+    <p class="lead" id="lead"></p>
+    <div class="search"><input type="search" id="q" placeholder="名前・ジャンルで探す（例: 2人、協力、トリテ）" autocomplete="off"></div>
+    <div class="filters">
+      <div class="frow" id="fP"><span class="flabel">人数</span></div>
+      <div class="frow" id="fT"><span class="flabel">時間</span></div>
+      <div class="frow" id="fG"><span class="flabel">種類</span></div>
+      <div class="frow" id="fE"><span class="flabel">記録</span></div>
+    </div>
+    <div class="meta"><span id="count"></span>
+      <select id="sort" aria-label="並べ方"><option value="kana">五十音順</option><option value="recent">最近遊んだ順</option><option value="most">よく遊ぶ順</option><option value="time">短い順</option></select></div>
+    <div class="list" id="list"></div>
+  </section>
+
+  <section id="vLog" hidden>
+    <h1>遊んだ記録</h1>
+    <p class="lead">記録はこのiPhoneの中だけに保存されます。</p>
+    <div class="card c3"><h3>よく遊んだゲーム</h3><div id="rank"></div></div>
+    <div class="card c0"><h3>これまでの記録</h3><div id="allLogs"></div></div>
+    <div class="card c5"><h3>バックアップ</h3>
+      <p class="note">機種変更のときや念のために、記録をファイルに書き出しておけます。</p>
+      <div class="row"><button class="btn" id="bExport" type="button">書き出す</button><button class="btn" id="bImport" type="button">読み込む</button><input type="file" id="fileIn" accept="application/json,.json" hidden></div>
+    </div>
+  </section>
+</main>
+
+<nav class="tabs">
+  <button type="button" id="tList" aria-current="true"><span class="ic">▦</span>目録</button>
+  <button type="button" id="tPick"><span class="ic">⚄</span>おまかせ</button>
+  <button type="button" id="tLog" aria-current="false"><span class="ic">✎</span>記録</button>
+</nav>
+
+<div class="sheet" id="sheet" hidden><div class="in" id="sheetIn"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="games.js"></script>
+<script>
+"use strict";
+const G=(window.GAMES||[]).slice();
+const LS="bg-catalog-plays-v1";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function loadPlays(){try{const o=JSON.parse(localStorage.getItem(LS)||"{}");return o&&typeof o==="object"?o:{}}catch(e){return{}}}
+let plays=loadPlays();
+function savePlays(){try{localStorage.setItem(LS,JSON.stringify(plays))}catch(e){toast("保存できませんでした")}}
+function logsOf(id){return (plays[id]||[]).slice().sort((a,b)=>b.date<a.date?-1:1)}
+function lastPlayed(id){const l=logsOf(id);return l.length?l[0].date:""}
+function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+const WD="日月火水木金土";
+function jdate(s){if(!s)return"";const[y,m,d]=s.split("-").map(Number);const w=new Date(y,m-1,d).getDay();return y+"年"+m+"月"+d+"日("+WD[w]+")"}
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),1600)}
+
+/* 絞り込みの状態 */
+const st={p:null,t:null,g:null,e:null,q:""};
+const P_OPTS=[[1,"1人"],[2,"2人"],[3,"3人"],[4,"4人"],[5,"5人"],[6,"6人〜"]];
+const T_OPTS=[[15,"〜15分"],[30,"〜30分"],[60,"〜60分"],[999,"60分〜"]];
+const E_OPTS=[["played","遊んだ"],["never","まだ遊んでない"]];
+const GENRES=[...new Set(G.flatMap(g=>g.genres||[]))];
+const GORDER=["2人対戦","協力","パーティ","ワード","正体隠匿","推理","ブラフ","トリックテイキング","デッキ構築","拡大再生産","ワーカープレイスメント","パズル","アクション","ダイス","チキンレース","セット集め","記憶","カードゲーム","アブストラクト","麻雀風"];
+GENRES.sort((a,b)=>{const i=GORDER.indexOf(a),j=GORDER.indexOf(b);return (i<0?99:i)-(j<0?99:j)||a.localeCompare(b,"ja")});
+function mkChips(box,opts,key){opts.forEach(([v,l])=>{const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=l;b.setAttribute("aria-pressed","false");b.onclick=()=>{st[key]=st[key]===v?null:v;[...box.querySelectorAll(".chip")].forEach(c=>c.setAttribute("aria-pressed",String(c===b&&st[key]===v)));render()};box.appendChild(b)})}
+mkChips($("fP"),P_OPTS,"p");mkChips($("fT"),T_OPTS,"t");mkChips($("fG"),GENRES.map(g=>[g,g]),"g");mkChips($("fE"),E_OPTS,"e");
+$("lead").textContent="持っているボードゲーム "+G.length+" 本";
+
+function norm(s){return String(s||"").toLowerCase().replace(/[\s・：:！!？?＆&\-ー〜～]/g,"").replace(/[ァ-ン]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60))}
+const ALIAS={"トリックテイキング":"トリテ","デッキ構築":"デッキビルド","2人対戦":"ふたり 二人","協力":"きょうりょく","正体隠匿":"人狼","ワード":"言葉 ことば","麻雀風":"まーじゃん"};
+function hay(g){const ps=[];for(let p=g.pmin;p<=Math.min(g.pmax,8);p++)ps.push(p+"人");return norm([g.name,g.kana,g.en,g.title,(g.genres||[]).map(x=>x+" "+(ALIAS[x]||"")).join(" "),g.one,ps.join(" ")].join(" "))}
+G.forEach(g=>g._h=hay(g));
+function matchP(g,p){if(p==null)return true;if(p===6)return g.pmax>=6;return g.pmin<=p&&p<=g.pmax}
+function matchT(g,t){if(t==null)return true;const m=g.tmax||g.tmin||0;if(t===999)return m>60;return m>0&&m<=t}
+function render(){
+  const q=norm($("q").value);
+  let a=G.filter(g=>(!q||g._h.includes(q))&&matchP(g,st.p)&&matchT(g,st.t)&&(!st.g||(g.genres||[]).includes(st.g))&&(!st.e||(st.e==="played"?logsOf(g.id).length:!logsOf(g.id).length)));
+  const s=$("sort").value;
+  if(s==="kana")a.sort((x,y)=>x.kana.localeCompare(y.kana,"ja"));
+  if(s==="recent")a.sort((x,y)=>(lastPlayed(y.id)||"").localeCompare(lastPlayed(x.id)||"")||x.kana.localeCompare(y.kana,"ja"));
+  if(s==="most")a.sort((x,y)=>logsOf(y.id).length-logsOf(x.id).length||x.kana.localeCompare(y.kana,"ja"));
+  if(s==="time")a.sort((x,y)=>(x.tmax||x.tmin)-(y.tmax||y.tmin)||x.kana.localeCompare(y.kana,"ja"));
+  $("count").textContent=a.length+" 件";
+  $("list").innerHTML=a.length?a.map(itemHTML).join(""):'<p class="empty">条件に合うゲームがありません</p>';
+}
+function itemHTML(g){const n=logsOf(g.id).length;return '<button type="button" class="item" data-id="'+g.id+'"><div class="nm">'+esc(g.name)+'</div><div class="one">'+esc(g.one)+'</div><div class="tags"><span class="tag p">'+esc(g.players)+'</span><span class="tag t">'+esc(g.time)+'</span>'+(g.genres||[]).map(x=>'<span class="tag g">'+esc(x)+'</span>').join("")+'<span class="tag w">'+esc(g.weight)+'</span>'+(n?'<span class="tag played">遊んだ '+n+'回</span>':"")+'</div></button>'}
+$("list").addEventListener("click",e=>{const b=e.target.closest(".item");if(b)openGame(b.dataset.id)});
+$("q").addEventListener("input",render);$("sort").addEventListener("change",render);
+
+/* 詳細 */
+let curId=null;
+function li(arr){return Array.isArray(arr)?arr.map(x=>"<li>"+esc(x)+"</li>").join(""):""}
+function openGame(id,push=true){
+  const g=G.find(x=>x.id===id);if(!g)return;curId=id;
+  const r=g.rules||{};
+  $("sheetIn").innerHTML=
+   '<button type="button" class="back" id="bBack">‹ 一覧へ</button>'+
+   '<h2 class="dtitle">'+esc(g.name)+'</h2><div class="den">'+esc(g.title&&g.title!==g.name?g.title+" / ":"")+esc(g.en||"")+'</div>'+
+   '<div class="card c1"><div class="grid"><div>人数<b>'+esc(g.players)+'</b></div><div>時間<b>'+esc(g.time)+'</b></div><div>年齢<b>'+esc(g.age||"—")+'</b></div></div>'+
+   '<div class="tags" style="margin-top:8px">'+(g.genres||[]).map(x=>'<span class="tag g">'+esc(x)+'</span>').join("")+'<span class="tag w">'+esc(g.weight)+'</span></div>'+
+   (g.best?'<p style="margin-top:8px;font-size:.85rem">おすすめ人数: '+esc(g.best)+'</p>':"")+'</div>'+
+   '<div class="card c0"><h3>どんなゲーム？</h3><p>'+esc(g.about)+'</p></div>'+
+   '<div class="card c3"><h3>目的・勝ち方</h3><p>'+esc(r.goal)+'</p></div>'+
+   (r.setup&&r.setup.length?'<div class="card c5"><h3>準備</h3><ul>'+li(r.setup)+'</ul></div>':"")+
+   '<div class="card c2"><h3>遊び方</h3><ol>'+li(r.flow)+'</ol></div>'+
+   '<div class="card c4"><h3>終わり方</h3><p>'+esc(r.end)+'</p></div>'+
+   (r.tips&&r.tips.length?'<div class="card c1"><h3>コツ・注意</h3><ul>'+li(r.tips)+'</ul></div>':"")+
+   '<div class="card c0"><h3>遊んだ記録</h3><div id="dLogs"></div>'+
+   '<label class="f" for="pDate">日付</label><input type="date" id="pDate" value="'+today()+'">'+
+   '<label class="f" for="pWho">一緒に遊んだ人</label><input type="text" id="pWho" placeholder="例: オリシ、職場の先生" list="whoList">'+
+   '<label class="f" for="pWin">勝った人（任意）</label><input type="text" id="pWin" placeholder="例: 自分" list="whoList">'+
+   '<label class="f" for="pMemo">ひとこと</label><textarea id="pMemo" placeholder="例: 初めて勝てた。次は拡張も入れたい"></textarea>'+
+   '<div class="row" style="margin-top:10px"><button type="button" class="btn primary" id="bAdd">記録する</button></div></div>'+
+   '<p class="note">ルールは要点のまとめです。細かい例外や数値は箱の説明書で確認してください。'+(g.url?' 作品情報: <a href="'+esc(g.url)+'" target="_blank" rel="noopener">ボドゲーマ</a>':'')+'</p>'+
+   '<datalist id="whoList">'+whoNames().map(n=>'<option value="'+esc(n)+'">').join("")+'</datalist>';
+  drawLogs();
+  $("bBack").onclick=()=>history.back();
+  $("bAdd").onclick=addPlay;
+  $("sheet").hidden=false;$("sheet").scrollTop=0;document.body.style.overflow="hidden";
+  if(push)history.pushState({g:id},"","#"+id);
+}
+function closeGame(){$("sheet").hidden=true;document.body.style.overflow="";curId=null;render();renderLog()}
+window.addEventListener("popstate",e=>{if(e.state&&e.state.g)openGame(e.state.g,false);else closeGame()});
+function whoNames(){const s=new Set();Object.values(plays).flat().forEach(l=>{String(l.who||"").split(/[、,，\s]+/).forEach(n=>n&&s.add(n));l.win&&s.add(l.win)});return [...s]}
+function drawLogs(){const l=logsOf(curId);$("dLogs").innerHTML=l.length?l.map(x=>'<div class="log"><button type="button" class="x" data-k="'+x.k+'">消す</button><span class="d">'+esc(jdate(x.date))+'</span>'+(x.who?'　'+esc(x.who):"")+(x.win?'<br>勝ち: '+esc(x.win):"")+(x.memo?'<br>'+esc(x.memo):"")+'</div>').join(""):'<p class="note">まだ記録はありません。</p>';
+  $("dLogs").querySelectorAll(".x").forEach(b=>b.onclick=()=>{if(!confirmDel())return;plays[curId]=(plays[curId]||[]).filter(x=>x.k!==b.dataset.k);if(!plays[curId].length)delete plays[curId];savePlays();drawLogs();toast("消しました")})}
+let delArm=0;function confirmDel(){const n=Date.now();if(n-delArm<2500){delArm=0;return true}delArm=n;toast("もう一度押すと消します");return false}
+function addPlay(){const d=$("pDate").value||today();const rec={k:Date.now().toString(36),date:d,who:$("pWho").value.trim(),win:$("pWin").value.trim(),memo:$("pMemo").value.trim()};(plays[curId]=plays[curId]||[]).push(rec);savePlays();$("pWho").value="";$("pWin").value="";$("pMemo").value="";drawLogs();toast("記録しました")}
+
+/* 記録タブ */
+function renderLog(){
+  const ids=Object.keys(plays).filter(id=>G.find(g=>g.id===id));
+  const rk=ids.map(id=>[id,plays[id].length]).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  $("rank").innerHTML=rk.length?rk.map(([id,n],i)=>'<div class="stat" data-id="'+id+'"><span>'+(i+1)+'. '+esc(G.find(g=>g.id===id).name)+'</span><span>'+n+'回</span></div>').join(""):'<p class="note">ゲームの画面の下から記録すると、ここに並びます。</p>';
+  const all=ids.flatMap(id=>plays[id].map(x=>({...x,id}))).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,100);
+  $("allLogs").innerHTML=all.length?all.map(x=>'<div class="stat" data-id="'+x.id+'"><span>'+esc(G.find(g=>g.id===x.id).name)+(x.who?'<br><span class="note">'+esc(x.who)+'</span>':"")+'</span><span class="note">'+esc(jdate(x.date))+'</span></div>').join(""):'<p class="note">まだ記録はありません。</p>';
+}
+["rank","allLogs"].forEach(k=>$(k).addEventListener("click",e=>{const s=e.target.closest(".stat");if(s)openGame(s.dataset.id)}));
+
+/* タブ */
+function showTab(t){$("vList").hidden=t!=="list";$("vLog").hidden=t!=="log";$("tList").setAttribute("aria-current",String(t==="list"));$("tLog").setAttribute("aria-current",String(t==="log"));if(t==="log")renderLog();window.scrollTo(0,0)}
+$("tList").onclick=()=>showTab("list");$("tLog").onclick=()=>showTab("log");
+$("tPick").onclick=()=>{showTab("list");const items=[...document.querySelectorAll("#list .item")];if(!items.length){toast("候補がありません");return}const b=items[Math.floor(Math.random()*items.length)];toast("今の絞り込みから選びました");openGame(b.dataset.id)};
+
+/* バックアップ */
+$("bExport").onclick=()=>{try{const blob=new Blob([JSON.stringify({app:"boardgames",version:1,exportedAt:new Date().toISOString(),plays})],{type:"application/json"});const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download="boardgames-"+today()+".json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000);toast("書き出しました")}catch(e){toast("書き出せませんでした")}};
+$("bImport").onclick=()=>$("fileIn").click();
+$("fileIn").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const o=JSON.parse(await f.text());if(!o||!o.plays)throw 0;Object.entries(o.plays).forEach(([id,arr])=>{const cur=plays[id]||[];const ks=new Set(cur.map(x=>x.k));arr.forEach(x=>{if(!ks.has(x.k))cur.push(x)});plays[id]=cur});savePlays();renderLog();render();toast("読み込みました")}catch(err){toast("読み込めませんでした")}e.target.value=""};
+
+render();
+if(location.hash.length>1){const id=decodeURIComponent(location.hash.slice(1));if(G.find(g=>g.id===id)){history.replaceState(null,"",location.pathname);history.pushState({g:id},"","#"+id);openGame(id,false)}}
+</script>
+</body>
+</html>
