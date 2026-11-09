@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>戸田ボート仮想口座</title>
+<meta name="description" content="採用理論で戸田ボートの単勝を1点100円ずつ買ったつもりの仮想口座（実際には買っていません）">
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#14213d;--muted:#5d6b82;--line:#dbe3ee;--blue:#1f5fbf;--blue2:#e8f0fc;--plus:#0b7a43;--minus:#c0392b;--hitbg:#e6f6ec;--kenbg:#f7f9fc}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1522;--card:#172133;--ink:#e6edf7;--muted:#9aa8bf;--line:#2a3850;--blue:#6ea4ff;--blue2:#1d2d4a;--plus:#4cd38a;--minus:#ff7b6b;--hitbg:#173a2a;--kenbg:#131c2b}}
+:root[data-theme="dark"]{--bg:#0e1522;--card:#172133;--ink:#e6edf7;--muted:#9aa8bf;--line:#2a3850;--blue:#6ea4ff;--blue2:#1d2d4a;--plus:#4cd38a;--minus:#ff7b6b;--hitbg:#173a2a;--kenbg:#131c2b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Hiragino Sans","Yu Gothic UI",sans-serif;line-height:1.6}
+html,body{overflow-x:hidden}main{max-width:760px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.25rem;margin:0}.sub{color:var(--muted);font-size:.85rem;margin:2px 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.hero{background:var(--blue2)}.hero .lab{color:var(--muted);font-size:.85rem}
+.bal{font-size:2.6rem;font-weight:700;letter-spacing:.01em;font-variant-numeric:tabular-nums}.bal small{font-size:1.1rem;font-weight:600}
+.pl{font-weight:700}.plus{color:var(--plus)}.minus{color:var(--minus)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.stats div{background:var(--card);border-radius:10px;padding:8px;text-align:center}.stats b{display:block;font-size:1.15rem;font-variant-numeric:tabular-nums}.stats span{font-size:.75rem;color:var(--muted)}
+h2{font-size:1rem;margin:0 0 10px}
+.chart{width:100%;height:auto}.chart .line{fill:none;stroke:var(--blue);stroke-width:2.5}.chart circle{fill:var(--blue)}
+.chart .base{stroke:var(--muted);stroke-dasharray:4 4}.chart text{fill:var(--muted);font-size:11px}
+.day{border-top:1px solid var(--line);padding:6px 0}.day:first-of-type{border-top:0}
+summary{cursor:pointer;display:flex;justify-content:space-between;gap:8px;padding:6px 0;font-weight:600;list-style:none}summary::-webkit-details-marker{display:none}
+summary .dsum{font-weight:400;white-space:nowrap}
+table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{padding:6px 3px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--muted);font-weight:500;font-size:.75rem}
+td:nth-child(2){white-space:normal}.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.buy{background:var(--card)}tr.ken td{color:var(--muted);background:var(--kenbg)}
+.hit{color:var(--plus);font-weight:700}.miss{color:var(--minus)}
+.boat{display:inline-block;width:1.5em;text-align:center;border-radius:4px;font-weight:700;border:1px solid #888}
+.b1{background:#fff;color:#000}.b2{background:#222;color:#fff}.b3{background:#e53935;color:#fff}.b4{background:#1e5bd8;color:#fff}.b5{background:#f5d000;color:#000}.b6{background:#1e9e4a;color:#fff}
+ul.up{list-style:none;margin:0;padding:0}ul.up li{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid var(--line);font-size:.9rem}ul.up li span:last-child{text-align:right}
+.muted{color:var(--muted)}.small{font-size:.78rem}
+.note{font-size:.82rem;color:var(--muted)}.note li{margin:2px 0}
+.wrap{overflow-x:auto}
+@media (max-width:480px){.bal{font-size:2.1rem}.stats{grid-template-columns:repeat(2,1fr)}table{font-size:.78rem}}
+</style></head><body><main>
+<h1>戸田ボート 仮想口座</h1>
+<p class="sub">1万円から、採用理論で単勝を1点100円ずつ「買ったつもり」の口座です（実際には買っていません）。更新: 2026年11月10日(火) 06:30</p>
+<section class="card hero">
+<div class="lab">いまの残高</div>
+<div class="bal">10,000<small>円</small></div>
+<div class="pl ">スタートから +0円</div>
+<div class="stats">
+<div><b>0</b><span>買ったレース</span></div>
+<div><b>0</b><span>的中</span></div>
+<div><b>0%</b><span>的中率</span></div>
+<div><b>0%</b><span>回収率</span></div>
+</div>
+
+</section>
+<section class="card"><h2>残高の動き</h2><p class="muted">開催日の結果が入ると、ここに残高の動きが出ます。</p></section>
+<section class="card"><h2>開催日ごとの結果</h2><div class="wrap"><p class="muted">まだ開催日の結果がありません。次の開催日の夜に最初の結果が入ります。</p></div></section>
+<section class="card"><h2>これからの戸田の開催日</h2><ul class="up"><li><span>2026年11月12日(木)</span><span class="muted">ＢＡＣＨプラザ杯</span></li><li><span>2026年11月13日(金)</span><span class="muted">ＢＡＣＨプラザ杯</span></li><li><span>2026年11月14日(土)</span><span class="muted">ＢＡＣＨプラザ杯</span></li><li><span>2026年11月15日(日)</span><span class="muted">ＢＡＣＨプラザ杯</span></li><li><span>2026年11月18日(水)</span><span class="muted">ＡＬ・ＲＢ大宮アルディージャＷＯＭＥＮカップ</span></li><li><span>2026年11月19日(木)</span><span class="muted">ＡＬ・ＲＢ大宮アルディージャＷＯＭＥＮカップ</span></li><li><span>2026年11月20日(金)</span><span class="muted">ＡＬ・ＲＢ大宮アルディージャＷＯＭＥＮカップ</span></li><li><span>2026年11月21日(土)</span><span class="muted">ＡＬ・ＲＢ大宮アルディージャＷＯＭＥＮカップ</span></li><li><span>2026年11月22日(日)</span><span class="muted">ＡＬ・ＲＢ大宮アルディージャＷＯＭＥＮカップ</span></li><li><span>2026年11月23日(月)</span><span class="muted">ＡＬ・ＲＢ大宮アルディージャＷＯＭＥＮカップ</span></li><li><span>2026年11月27日(金)</span><span class="muted">にっぽん未来プロジェクト競走ｉｎ戸田</span></li><li><span>2026年11月28日(土)</span><span class="muted">にっぽん未来プロジェクト競走ｉｎ戸田</span></li></ul></section>
+<section class="card note"><h2>ルール</h2><ul>
+<li>スタート: 2026年11月10日(火)、10,000円。</li>
+<li>理論: その日に採用中の理論で判定（いまは V4（1号艇以外で勝つ確率40%以上の艇の単勝））。理論が更新されると、その日以降は新しい理論で判定します。過去の日の判定は変えません。</li>
+<li>番組表と直前情報（展示タイム・進入・チルト・部品交換・体重・風・波）まで使って判定。買う艇はオッズでは変えません。</li>
+<li>1点100円。払戻は公式の単勝払戻金（100円あたり）。確定オッズは参考表示。</li>
+<li>毎晩、最終レースの結果が出たあとに自動で反映しています。PCが止まっていた日は、次に動いたときにまとめて反映します。</li>
+</ul></section>
+</main></body></html>
