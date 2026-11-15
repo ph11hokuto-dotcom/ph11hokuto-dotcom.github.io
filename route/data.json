@@ -1,35 +1,35 @@
 {
   "stores": {
     "asakusa": {
-      "lastChecked": "2026-11-09 08:48",
+      "lastChecked": "2026-11-16 08:48",
       "nextRouteSet": {
-        "startDate": "2026-11-08",
-        "endDate": "2026-11-10",
+        "startDate": "2026-12-06",
+        "endDate": "2026-12-08",
         "firstDayNote": "17:00〜 close",
         "lastDayNote": "18:30〜 open"
       },
-      "prevRouteSet": "2026-10-14",
+      "prevRouteSet": "2026-11-10",
       "regularHours": {
         "weekday": "10:00〜23:00",
         "weekend": "10:00〜21:00"
       }
     },
     "ikebukuro": {
-      "lastChecked": "2026-11-09 08:48",
+      "lastChecked": "2026-11-16 08:48",
       "nextRouteSet": {
-        "startDate": "2026-11-08",
-        "endDate": "2026-11-10",
+        "startDate": "2026-12-06",
+        "endDate": "2026-12-08",
         "firstDayNote": "17:00〜 close",
         "lastDayNote": "18:30〜 open"
       },
-      "prevRouteSet": "2026-10-14",
+      "prevRouteSet": "2026-11-10",
       "regularHours": {
         "weekday": "10:00〜23:00",
         "weekend": "10:00〜21:00"
       }
     },
     "omiya": {
-      "lastChecked": "2026-11-09 08:48",
+      "lastChecked": "2026-11-16 08:48",
       "nextRouteSet": {
         "startDate": "2026-11-29",
         "endDate": "2026-12-01",
@@ -43,7 +43,7 @@
       }
     },
     "takadanobaba": {
-      "lastChecked": "2026-11-09 08:48",
+      "lastChecked": "2026-11-16 08:48",
       "nextRouteSet": {
         "startDate": "2026-11-29",
         "endDate": "2026-12-01",
@@ -61,7 +61,7 @@
       }
     },
     "shinjuku": {
-      "lastChecked": "2026-11-09 08:48",
+      "lastChecked": "2026-11-16 08:48",
       "nextRouteSet": {
         "startDate": "2026-11-23",
         "endDate": "2026-11-25",
