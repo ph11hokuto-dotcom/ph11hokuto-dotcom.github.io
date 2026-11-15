@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fdf4e8"/><stop offset="1" stop-color="#f6e4cf"/>
+    </linearGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ea8a5e"/><stop offset="1" stop-color="#d96b40"/>
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" fill="url(#bg)"/>
+  <!-- カメラ -->
+  <path d="M68 38h44l8 14H60z" fill="#c45a32"/>
+  <rect x="24" y="48" width="132" height="100" rx="22" fill="url(#body)"/>
+  <rect x="34" y="60" width="22" height="10" rx="5" fill="#fbd9c6"/>
+  <circle cx="136" cy="66" r="6" fill="#fff3e6"/>
+  <!-- レンズ＝お皿 -->
+  <circle cx="90" cy="100" r="38" fill="#fff8ef"/>
+  <circle cx="90" cy="100" r="38" fill="none" stroke="#b9532c" stroke-width="5"/>
+  <circle cx="90" cy="100" r="27" fill="#f7ead6"/>
+  <!-- 料理（ごはん＋カレー） -->
+  <path d="M68 100a22 22 0 0 1 44 0z" fill="#ffffff"/>
+  <path d="M68 100a22 22 0 0 0 44 0z" fill="#e8a33c"/>
+  <circle cx="82" cy="108" r="3.5" fill="#d3652b"/>
+  <circle cx="97" cy="111" r="3" fill="#7fb36a"/>
+  <!-- ハート -->
+  <path d="M139 120c-4-6-13-3-11 4 1 4 11 11 11 11s10-7 11-11c2-7-7-10-11-4z" fill="#fff3e6"/>
+</svg>

@@ -9,12 +9,13 @@
 | ひとこと記録帳 | `hitokoto-kiroku/` | https://ph11hokuto-dotcom.github.io/hitokoto-kiroku/ |
 | ふたりの体重記録 | `weight/` | https://ph11hokuto-dotcom.github.io/weight/ |
 | ボドゲ目録（持っているボードゲームとルール） | `boardgames/` | https://ph11hokuto-dotcom.github.io/boardgames/ |
+| お店アルバム（食事した店を写真つきで記録） | `omise-album/` | https://ph11hokuto-dotcom.github.io/omise-album/ |
 
 ## 使い方
 iPhoneのSafariで各ページを開き、共有ボタンから「ホーム画面に追加」すると、アイコンからアプリのように開けます。
 
 ## メモ
-- 店のメモ帳・ひとこと記録帳・ボドゲ目録の遊んだ記録は、各端末のブラウザの中だけに保存されます（サーバーには送られません）。
+- 店のメモ帳・ひとこと記録帳・お店アルバム・ボドゲ目録の遊んだ記録は、各端末のブラウザの中だけに保存されます（サーバーには送られません）。
 - ふたりの体重記録のデータは、ほくとさんのGoogleスプレッドシート（Apps Script）に保存されます。保存先と合言葉は設定リンクの `#` の後ろで渡すので、このリポジトリには入れていません。
 - ルートチェンジ・カレンダーの `route/data.json` は、毎週月曜の朝に定期作業（Claude）が公式サイトを確認して更新します。
 - 新しいアプリを作るときは、この中に新しいフォルダを足します。
