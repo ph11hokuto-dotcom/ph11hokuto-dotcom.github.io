@@ -145,8 +145,7 @@
   .two button { flex: 1; border: 0; font-weight: 800; font-size: 1rem; padding: 13px 6px; border-radius: 12px; }
   .b-sent { background: var(--status-normal); color: #fff; }
   .b-unsent { background: #eee3ea; color: var(--text-muted); }
-  .b-sent.dim, .b-unsent.dim { opacity: .45; }
-  #sheetBtns .b-unsent:not(.dim) { box-shadow: inset 0 0 0 2px var(--text-muted); }
+  .b-save { background: var(--accent); color: #fff; }
   .b-del { background: transparent !important; color: var(--status-closed) !important; border: 2px solid var(--status-closed) !important; }
   .hint { font-size: .78rem; color: var(--text-muted); margin: 8px 2px 0; line-height: 1.6; }
   .toast { position: fixed; left: 50%; bottom: calc(80px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 60; background: #3a2b3f; color: #fff;
@@ -456,7 +455,7 @@
       gr.dates[v.date] = 1; gr.manual[v.date] = 1; if (v.date > gr.last) gr.last = v.date;
     });
     var arr = Object.keys(groups).map(function (k) { return groups[k]; });
-    if (!arr.length) { list.appendChild(textEl('p', 'rec-msg', 'まだ記録がありません。ジムで登ったら「＋ 写真を追加」から、グレードと完登を選んで保存します。')); return; }
+    if (!arr.length) { list.appendChild(textEl('p', 'rec-msg', 'まだ記録がありません。ジムで登ったら「＋ 写真を追加」から写真を選び、グレードを押して保存します。')); return; }
     arr.sort(function (a, b) { return a.last < b.last ? 1 : a.last > b.last ? -1 : 0; });
     // 同じ店の次の期間の始まり（期間の終わりの表示用）
     var starts = {};
@@ -472,12 +471,11 @@
         if (later) { var e = dateOnly(later); e.setDate(e.getDate() - 1); label += formatMD(gr.period) + '〜' + formatMD(isoOf(e)); }
         else label += formatMD(gr.period) + '〜';
       } else label += '（期間不明）';
-      var sentList = gr.items.filter(function (p) { return p.sent; });
-      var best = sentList.reduce(function (m, p) { return gradeIdx(p.grade) > gradeIdx(m) ? p.grade : m; }, '');
+      var best = gr.items.reduce(function (m, p) { return gradeIdx(p.grade) > gradeIdx(m) ? p.grade : m; }, '');
       var head = document.createElement('div');
       head.className = 'gh';
       head.appendChild(textEl('span', '', label));
-      head.appendChild(textEl('small', '', '完登' + sentList.length + '本' + (best ? '・最高 ' + best : '')));
+      head.appendChild(textEl('small', '', gr.items.length ? '写真' + gr.items.length + '枚' + (best ? '・最高 ' + best : '') : ''));
       box.appendChild(head);
       var vd = document.createElement('div');
       vd.className = 'gvisits';
@@ -506,8 +504,7 @@
           var t = thumbMem[p.id] || lsGet(LS_TH + p.id);
           if (t) { thumbMem[p.id] = t; img.src = t; } else need.push(p.id);
           ph.appendChild(img);
-          ph.appendChild(textEl('span', 'tag', p.grade));
-          ph.appendChild(textEl('span', 'ok' + (p.sent ? '' : ' ng'), p.sent ? '完登' : '未完登'));
+          if (p.grade) ph.appendChild(textEl('span', 'tag', p.grade));
           ph.addEventListener('click', function () { openEdit(p); });
           grid.appendChild(ph);
         });
@@ -526,13 +523,25 @@
     if (!ids.length) return;
     var batch = ids.slice(0, 20), rest = ids.slice(20);
     api('a=thumbs&ids=' + batch.join(',')).then(function (j) {
-      Object.keys(j.thumbs).forEach(function (id) {
-        thumbMem[id] = j.thumbs[id];
-        lsSet(LS_TH + id, j.thumbs[id]);
-        var imgs = document.querySelectorAll('img[data-thumb="' + id + '"]');
-        for (var i = 0; i < imgs.length; i++) imgs[i].src = j.thumbs[id];
+      batch.forEach(function (id) {
+        if (j.thumbs[id]) setThumb(id, j.thumbs[id]);
+        else thumbFromPhoto(id); // 小さい画像がない記録は、写真本体から作る
       });
       loadThumbs(rest);
+    }).catch(function () {});
+  }
+  function setThumb(id, data) {
+    thumbMem[id] = data;
+    lsSet(LS_TH + id, data);
+    var imgs = document.querySelectorAll('img[data-thumb="' + id + '"]');
+    for (var i = 0; i < imgs.length; i++) imgs[i].src = data;
+  }
+  function thumbFromPhoto(id) {
+    api('a=photo&id=' + encodeURIComponent(id)).then(function (j) {
+      fullMem[id] = j.data;
+      var img = new Image();
+      img.onload = function () { setThumb(id, shrink(img, THUMB_PX, true, 0.7)); };
+      img.src = j.data;
     }).catch(function () {});
   }
 
@@ -565,38 +574,26 @@
     var gc = $('gradeChips'); gc.innerHTML = '';
     GRADES.forEach(function (gname) {
       var b = textEl('button', 'chip' + (sheet.grade === gname ? ' sel' : ''), gname);
-      b.addEventListener('click', function () { sheet.grade = gname; drawChips(); });
+      b.addEventListener('click', function () { sheet.grade = sheet.grade === gname ? '' : gname; drawChips(); }); // もう一度押すと外れる
       gc.appendChild(b);
     });
     var bt = $('sheetBtns'); bt.innerHTML = '';
     if (sheet.mode === 'add') {
-      [[true, '完登で保存', 'b-sent'], [false, '未完登で保存', 'b-unsent']].forEach(function (x) {
-        var b = textEl('button', x[2] + (sheet.grade ? '' : ' dim'), x[1]);
-        b.addEventListener('click', function () { saveAdd(x[0]); });
-        bt.appendChild(b);
-      });
-      $('sheetHint').textContent = 'グレードを選んで、完登か未完登を押すと保存します。';
+      var sv = textEl('button', 'b-save', '保存');
+      sv.addEventListener('click', saveAdd);
+      bt.appendChild(sv);
+      $('sheetHint').textContent = 'グレードは選ばなくても保存できます。';
     } else if (sheet.mode === 'visit') {
       var b = textEl('button', 'b-sent', '行った日として保存');
       b.addEventListener('click', saveVisit);
       bt.appendChild(b);
       $('sheetHint').textContent = '写真を撮らなかった日も、今期の回数に入ります。';
     } else {
-      [[true, '完登'], [false, '未完登']].forEach(function (x) {
-        var b = textEl('button', (x[0] ? 'b-sent' : 'b-unsent') + (sheet.sent === x[0] ? '' : ' dim'), x[1]);
-        b.addEventListener('click', function () { sheet.sent = x[0]; drawChips(); });
-        bt.appendChild(b);
-      });
-      var row2 = document.createElement('div');
-      row2.className = 'two extra';
-      row2.style.marginTop = '8px';
       var del = textEl('button', 'b-del', sheet.confirmDel ? '本当に消す' : '消す');
       del.addEventListener('click', function () { if (sheet.confirmDel) saveDelete(); else { sheet.confirmDel = true; drawChips(); } });
-      var ok = textEl('button', 'b-sent', '直して保存');
-      ok.style.background = 'var(--accent)';
+      var ok = textEl('button', 'b-save', '直して保存');
       ok.addEventListener('click', saveEdit);
-      row2.appendChild(del); row2.appendChild(ok);
-      bt.parentNode.insertBefore(row2, bt.nextSibling);
+      bt.appendChild(del); bt.appendChild(ok);
       $('sheetHint').textContent = sheet.confirmDel ? 'もう一度押すと、この記録と写真を消します（写真はドライブのゴミ箱に30日残ります）。' : '';
     }
   }
@@ -661,10 +658,9 @@
     openSheet('edit', formatMDW(p.date) + ' ' + storeName(p.store));
   }
 
-  function saveAdd(sent) {
-    if (!sheet.grade) { toast('先にグレードを選んでください'); return; }
+  function saveAdd() {
     var date = $('sheetDate').value || todayIso();
-    var rec = { date: date, store: sheet.store, grade: sheet.grade, sent: sent, period: periodOf(sheet.store, date) };
+    var rec = { date: date, store: sheet.store, grade: sheet.grade, sent: true, period: periodOf(sheet.store, date) };
     var thumb = sheet.thumb;
     lsSet(LS_LAST, sheet.store);
     closeSheet();
@@ -672,7 +668,7 @@
     api(null, Object.assign({ a: 'add', image: sheet.image, thumb: thumb }, rec)).then(function (j) {
       rec.id = j.id; thumbMem[j.id] = thumb; lsSet(LS_TH + j.id, thumb);
       DB.problems.push(rec); saveDbCache(); renderMine(); renderRec();
-      toast('保存しました（' + rec.grade + '・' + (sent ? '完登' : '未完登') + '）');
+      toast('保存しました' + (rec.grade ? '（' + rec.grade + '）' : ''));
     }).catch(function () { toast('保存できませんでした。もう一度追加してください', 4000); });
   }
   function saveVisit() {
