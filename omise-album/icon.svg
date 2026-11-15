@@ -1,27 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fdf4e8"/><stop offset="1" stop-color="#f6e4cf"/>
-    </linearGradient>
-    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ea8a5e"/><stop offset="1" stop-color="#d96b40"/>
-    </linearGradient>
-  </defs>
-  <rect width="180" height="180" fill="url(#bg)"/>
-  <!-- カメラ -->
-  <path d="M68 38h44l8 14H60z" fill="#c45a32"/>
-  <rect x="24" y="48" width="132" height="100" rx="22" fill="url(#body)"/>
-  <rect x="34" y="60" width="22" height="10" rx="5" fill="#fbd9c6"/>
-  <circle cx="136" cy="66" r="6" fill="#fff3e6"/>
-  <!-- レンズ＝お皿 -->
-  <circle cx="90" cy="100" r="38" fill="#fff8ef"/>
-  <circle cx="90" cy="100" r="38" fill="none" stroke="#b9532c" stroke-width="5"/>
-  <circle cx="90" cy="100" r="27" fill="#f7ead6"/>
-  <!-- 料理（ごはん＋カレー） -->
-  <path d="M68 100a22 22 0 0 1 44 0z" fill="#ffffff"/>
-  <path d="M68 100a22 22 0 0 0 44 0z" fill="#e8a33c"/>
-  <circle cx="82" cy="108" r="3.5" fill="#d3652b"/>
-  <circle cx="97" cy="111" r="3" fill="#7fb36a"/>
-  <!-- ハート -->
-  <path d="M139 120c-4-6-13-3-11 4 1 4 11 11 11 11s10-7 11-11c2-7-7-10-11-4z" fill="#fff3e6"/>
+<svg width="180" height="180" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+<rect width="180" height="180" fill="#e3f0e4"/>
+<g stroke="#5a3a22" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+<!-- ジョッキ -->
+<path d="M100 52h40v66h-40z" fill="#f6d06a"/>
+<path d="M100 52c0-10 8-14 14-10 4-8 18-8 20 0 8-2 12 6 6 10z" fill="#fff"/>
+<path d="M140 64h8c8 0 10 6 10 14v8c0 8-4 14-10 14h-8" fill="none"/>
+<!-- おにぎり -->
+<path d="M58 40c6 0 34 44 34 56 0 8-8 12-34 12s-34-4-34-12c0-12 28-56 34-56z" fill="#fff"/>
+<path d="M44 84h28v24H44z" fill="#4d5d4f" stroke-width="5"/>
+<!-- アルバム -->
+<path d="M20 112c22-8 46-8 70 4 24-12 48-12 70-4v40c-22-8-46-8-70 4-24-12-48-12-70-4z" fill="#fff"/>
+<path d="M90 116v40"/>
+</g>
+<circle cx="50" cy="70" r="4.5" fill="#5a3a22"/><circle cx="66" cy="70" r="4.5" fill="#5a3a22"/>
+<path d="M53 78q5 5 10 0" fill="none" stroke="#5a3a22" stroke-width="4" stroke-linecap="round"/>
+<ellipse cx="42" cy="78" rx="5" ry="3.5" fill="#f7a8a0"/><ellipse cx="74" cy="78" rx="5" ry="3.5" fill="#f7a8a0"/>
+<circle cx="112" cy="82" r="4.5" fill="#5a3a22"/><circle cx="128" cy="82" r="4.5" fill="#5a3a22"/>
+<path d="M115 91q5 5 10 0" fill="none" stroke="#5a3a22" stroke-width="4" stroke-linecap="round"/>
+<ellipse cx="106" cy="92" rx="5" ry="3.5" fill="#f08a80"/><ellipse cx="134" cy="92" rx="5" ry="3.5" fill="#f08a80"/>
+<path d="M46 132q8-4 16 0M118 132q8-4 16 0" fill="none" stroke="#d9b896" stroke-width="4" stroke-linecap="round"/>
 </svg>
