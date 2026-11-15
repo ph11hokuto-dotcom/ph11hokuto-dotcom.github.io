@@ -112,7 +112,8 @@
   .btn-sub { border: 2px solid var(--accent); background: var(--surface); color: var(--accent); font-weight: 700; font-size: .85rem; padding: 10px 12px; border-radius: 16px; }
   .rec-msg { font-size: .9rem; color: var(--text-muted); line-height: 1.7; background: var(--surface); border-radius: 18px; padding: 14px 16px; }
   .group { background: var(--surface); border-radius: 18px; padding: 10px; margin-bottom: 12px; box-shadow: var(--shadow); }
-  .gh { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-weight: 700; margin: 2px 2px 4px; }
+  .gh { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0 8px; font-weight: 700; margin: 2px 2px 4px; }
+  .gh span { white-space: nowrap; }
   .gh small { font-weight: 600; font-size: .8rem; color: var(--text-muted); white-space: nowrap; }
   .gvisits { font-size: .8rem; color: var(--text-muted); margin: 0 2px 8px; line-height: 1.8; font-variant-numeric: tabular-nums; }
   .vchip { display: inline-block; white-space: nowrap; margin-right: 6px; }
@@ -192,7 +193,7 @@
       <h4>店</h4>
       <div class="chips store" id="storeChips"></div>
       <div id="gradeArea">
-        <h4>グレード</h4>
+        <h4>全部登れたグレード</h4>
         <div class="chips" id="gradeChips"></div>
       </div>
       <div class="two" id="sheetBtns"></div>
@@ -455,7 +456,7 @@
       gr.dates[v.date] = 1; gr.manual[v.date] = 1; if (v.date > gr.last) gr.last = v.date;
     });
     var arr = Object.keys(groups).map(function (k) { return groups[k]; });
-    if (!arr.length) { list.appendChild(textEl('p', 'rec-msg', 'まだ記録がありません。ジムで登ったら「＋ 写真を追加」から写真を選び、グレードを押して保存します。')); return; }
+    if (!arr.length) { list.appendChild(textEl('p', 'rec-msg', 'まだ記録がありません。ジムで登ったら「＋ 写真を追加」からスコアシートの写真を選び、課題を全部登れたいちばん上のグレードを押して保存します。')); return; }
     arr.sort(function (a, b) { return a.last < b.last ? 1 : a.last > b.last ? -1 : 0; });
     // 同じ店の次の期間の始まり（期間の終わりの表示用）
     var starts = {};
@@ -475,7 +476,7 @@
       var head = document.createElement('div');
       head.className = 'gh';
       head.appendChild(textEl('span', '', label));
-      head.appendChild(textEl('small', '', gr.items.length ? '写真' + gr.items.length + '枚' + (best ? '・最高 ' + best : '') : ''));
+      head.appendChild(textEl('small', '', gr.items.length ? '写真' + gr.items.length + '枚' + (best ? '・全部登れた ' + best : '') : ''));
       box.appendChild(head);
       var vd = document.createElement('div');
       vd.className = 'gvisits';
@@ -582,7 +583,7 @@
       var sv = textEl('button', 'b-save', '保存');
       sv.addEventListener('click', saveAdd);
       bt.appendChild(sv);
-      $('sheetHint').textContent = 'グレードは選ばなくても保存できます。';
+      $('sheetHint').textContent = '課題を全部登れたいちばん上のグレードを1つ押します（選ばなくても保存できます）。';
     } else if (sheet.mode === 'visit') {
       var b = textEl('button', 'b-sent', '行った日として保存');
       b.addEventListener('click', saveVisit);
@@ -631,7 +632,7 @@
       sheet.store = lsGet(LS_LAST) || 'omiya'; sheet.grade = ''; sheet.item = null;
       $('sheetDate').value = todayIso();
       $('sheetImg').hidden = false; $('sheetImg').classList.remove('loading'); $('sheetImg').src = sheet.image;
-      openSheet('add', '写真を追加');
+      openSheet('add', 'スコアシートを追加');
     };
     img.onerror = function () { toast('この写真は読み込めませんでした'); };
     img.src = url;
