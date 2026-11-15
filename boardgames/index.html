@@ -13,9 +13,9 @@
 <title>ボドゲ目録</title>
 <style>
 :root{--bg:#f3efe6;--card:#fffdf8;--ink:#2b2a27;--sub:#6f6a60;--line:#e2dccf;--accent:#1f5fa8;--on-accent:#fff;--btn:#ebe5d8;--shadow:#e2dccf;
---t1:#e8f1fb;--t2:#fdf0e1;--t3:#eaf6ec;--t4:#f6ecf7;--t5:#fbf6dc;--good:#2e7d4f}
+--t1:#e8f1fb;--t2:#fdf0e1;--t3:#eaf6ec;--t4:#f6ecf7;--t5:#fbf6dc;--good:#2e7d4f;--warn:#b0482a}
 @media (prefers-color-scheme:dark){:root{--bg:#1c1f24;--card:#252a31;--ink:#ece8df;--sub:#a9a397;--line:#3a414b;--accent:#7fb2ec;--on-accent:#10161d;--btn:#313842;--shadow:#14171b;
---t1:#22303f;--t2:#3a2f22;--t3:#233529;--t4:#33283a;--t5:#36331f;--good:#7fd1a0}}
+--t1:#22303f;--t2:#3a2f22;--t3:#233529;--t4:#33283a;--t5:#36331f;--good:#7fd1a0;--warn:#f0a080}}
 [hidden]{display:none!important}
 *{box-sizing:border-box}
 html{background:var(--bg);-webkit-text-size-adjust:100%}
@@ -26,7 +26,7 @@ html.standalone main{padding-top:max(calc(env(safe-area-inset-top) + 16px),60px)
 h1{font-size:1.35rem;margin:2px 0 0;letter-spacing:.06em}
 .lead{color:var(--sub);font-size:.82rem;margin:0 0 12px}
 .search{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0 6px}
-input[type=search],input[type=text],input[type=date],select,textarea{width:100%;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+input[type=search],input[type=text],input[type=date],input[type=number],select,textarea{width:100%;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
 input,select,textarea{max-width:100%;min-width:0}
 input[type=search]::placeholder{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-height:44px;text-align:left}
@@ -84,6 +84,17 @@ a{color:var(--accent)}
 .toast.on{opacity:1}
 .stat{display:flex;justify-content:space-between;border-top:1px dashed var(--line);padding:6px 0;font-size:.9rem;cursor:pointer}
 .stat:first-child{border-top:none}
+/* 持っていく */
+.tag.b{background:var(--t2);font-weight:700}
+.btn.on{background:var(--t2);border-color:var(--accent);font-weight:700}
+.bring{display:flex;gap:10px;align-items:center;border-top:1px dashed var(--line);padding:9px 0}
+.bring:first-child{border-top:none}
+.bring input[type=checkbox]{width:22px;height:22px;flex:0 0 auto;margin:0;accent-color:var(--accent)}
+.bring .nm{flex:1;min-width:0;cursor:pointer;line-height:1.4}
+.bring .nm small{display:block;color:var(--sub);font-size:.76rem}
+.bring.done .nm b{text-decoration:line-through;color:var(--sub)}
+.bring .x{border:none;background:none;color:var(--sub);font-size:.78rem;cursor:pointer;flex:0 0 auto;padding:4px}
+.warn{color:var(--warn);font-weight:700}
 </style>
 </head>
 <body>
@@ -114,11 +125,25 @@ a{color:var(--accent)}
       <div class="row"><button class="btn" id="bExport" type="button">書き出す</button><button class="btn" id="bImport" type="button">読み込む</button><input type="file" id="fileIn" accept="application/json,.json" hidden></div>
     </div>
   </section>
+
+  <section id="vBring" hidden>
+    <h1>次の集まりに持っていく</h1>
+    <p class="lead">目録でゲームを開き「＋ 次の集まりに持っていく」を押すと、ここに並びます。</p>
+    <div class="card c1"><h3>集まりのメモ</h3>
+      <label class="f" for="gTitle">集まりの名前</label><input type="text" id="gTitle" placeholder="例: 職場の先生とボドゲ会">
+      <label class="f" for="gDate">日付</label><input type="date" id="gDate">
+      <label class="f" for="gPeople">集まる人数</label><input type="number" id="gPeople" inputmode="numeric" min="1" max="20" placeholder="例: 4">
+      <label class="f" for="gMemo">メモ</label><textarea id="gMemo" placeholder="例: 場所は〇〇さんの家。軽めのゲーム中心"></textarea>
+    </div>
+    <div class="card c2"><h3>持っていくゲーム</h3><p class="note" id="gCount"></p><div id="gList"></div></div>
+    <div class="row"><button class="btn" id="bClear" type="button">集まりが終わったので空にする</button></div>
+  </section>
 </main>
 
 <nav class="tabs">
   <button type="button" id="tList" aria-current="true"><span class="ic">▦</span>目録</button>
   <button type="button" id="tPick"><span class="ic">⚄</span>おまかせ</button>
+  <button type="button" id="tBring" aria-current="false"><span class="ic">◈</span>持っていく</button>
   <button type="button" id="tLog" aria-current="false"><span class="ic">✎</span>記録</button>
 </nav>
 
@@ -140,13 +165,21 @@ function lastPlayed(id){const l=logsOf(id);return l.length?l[0].date:""}
 function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 const WD="日月火水木金土";
 function jdate(s){if(!s)return"";const[y,m,d]=s.split("-").map(Number);const w=new Date(y,m-1,d).getDay();return y+"年"+m+"月"+d+"日("+WD[w]+")"}
+/* 次の集まりに持っていくリスト */
+const LSB="bg-catalog-bring-v1";
+function emptyBring(){return{title:"",date:"",people:"",memo:"",items:[]}}
+function loadBring(){try{const o=JSON.parse(localStorage.getItem(LSB)||"null");if(o&&Array.isArray(o.items))return Object.assign(emptyBring(),o)}catch(e){}return emptyBring()}
+let bring=loadBring();
+function saveBring(){try{localStorage.setItem(LSB,JSON.stringify(bring))}catch(e){toast("保存できませんでした")}}
+function inBring(id){return bring.items.some(x=>x.id===id)}
+function toggleBring(id){if(inBring(id)){bring.items=bring.items.filter(x=>x.id!==id);toast("リストから外しました")}else{bring.items.push({id,packed:false});toast("持っていくリストに入れました")}saveBring()}
 function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),1600)}
 
 /* 絞り込みの状態 */
 const st={p:null,t:null,g:null,e:null,q:""};
 const P_OPTS=[[1,"1人"],[2,"2人"],[3,"3人"],[4,"4人"],[5,"5人"],[6,"6人〜"]];
 const T_OPTS=[[15,"〜15分"],[30,"〜30分"],[60,"〜60分"],[999,"60分〜"]];
-const E_OPTS=[["played","遊んだ"],["never","まだ遊んでない"]];
+const E_OPTS=[["bring","持っていく"],["played","遊んだ"],["never","まだ遊んでない"]];
 const GENRES=[...new Set(G.flatMap(g=>g.genres||[]))];
 const GORDER=["2人対戦","協力","パーティ","ワード","正体隠匿","推理","ブラフ","トリックテイキング","デッキ構築","拡大再生産","ワーカープレイスメント","パズル","アクション","ダイス","チキンレース","セット集め","記憶","カードゲーム","アブストラクト","麻雀風"];
 GENRES.sort((a,b)=>{const i=GORDER.indexOf(a),j=GORDER.indexOf(b);return (i<0?99:i)-(j<0?99:j)||a.localeCompare(b,"ja")});
@@ -162,7 +195,7 @@ function matchP(g,p){if(p==null)return true;if(p===6)return g.pmax>=6;return g.p
 function matchT(g,t){if(t==null)return true;const m=g.tmax||g.tmin||0;if(t===999)return m>60;return m>0&&m<=t}
 function render(){
   const q=norm($("q").value);
-  let a=G.filter(g=>(!q||g._h.includes(q))&&matchP(g,st.p)&&matchT(g,st.t)&&(!st.g||(g.genres||[]).includes(st.g))&&(!st.e||(st.e==="played"?logsOf(g.id).length:!logsOf(g.id).length)));
+  let a=G.filter(g=>(!q||g._h.includes(q))&&matchP(g,st.p)&&matchT(g,st.t)&&(!st.g||(g.genres||[]).includes(st.g))&&(!st.e||(st.e==="bring"?inBring(g.id):st.e==="played"?logsOf(g.id).length:!logsOf(g.id).length)));
   const s=$("sort").value;
   if(s==="kana")a.sort((x,y)=>x.kana.localeCompare(y.kana,"ja"));
   if(s==="recent")a.sort((x,y)=>(lastPlayed(y.id)||"").localeCompare(lastPlayed(x.id)||"")||x.kana.localeCompare(y.kana,"ja"));
@@ -171,7 +204,7 @@ function render(){
   $("count").textContent=a.length+" 件";
   $("list").innerHTML=a.length?a.map(itemHTML).join(""):'<p class="empty">条件に合うゲームがありません</p>';
 }
-function itemHTML(g){const n=logsOf(g.id).length;return '<button type="button" class="item" data-id="'+g.id+'"><div class="nm">'+esc(g.name)+'</div><div class="one">'+esc(g.one)+'</div><div class="tags"><span class="tag p">'+esc(g.players)+'</span><span class="tag t">'+esc(g.time)+'</span>'+(g.genres||[]).map(x=>'<span class="tag g">'+esc(x)+'</span>').join("")+'<span class="tag w">'+esc(g.weight)+'</span>'+(n?'<span class="tag played">遊んだ '+n+'回</span>':"")+'</div></button>'}
+function itemHTML(g){const n=logsOf(g.id).length;return '<button type="button" class="item" data-id="'+g.id+'"><div class="nm">'+esc(g.name)+'</div><div class="one">'+esc(g.one)+'</div><div class="tags"><span class="tag p">'+esc(g.players)+'</span><span class="tag t">'+esc(g.time)+'</span>'+(g.genres||[]).map(x=>'<span class="tag g">'+esc(x)+'</span>').join("")+'<span class="tag w">'+esc(g.weight)+'</span>'+(n?'<span class="tag played">遊んだ '+n+'回</span>':"")+(inBring(g.id)?'<span class="tag b">持っていく</span>':"")+'</div></button>'}
 $("list").addEventListener("click",e=>{const b=e.target.closest(".item");if(b)openGame(b.dataset.id)});
 $("q").addEventListener("input",render);$("sort").addEventListener("change",render);
 
@@ -186,7 +219,8 @@ function openGame(id,push=true){
    '<h2 class="dtitle">'+esc(g.name)+'</h2><div class="den">'+esc(g.title&&g.title!==g.name?g.title+" / ":"")+esc(g.en||"")+'</div>'+
    '<div class="card c1"><div class="grid"><div>人数<b>'+esc(g.players)+'</b></div><div>時間<b>'+esc(g.time)+'</b></div><div>年齢<b>'+esc(g.age||"—")+'</b></div></div>'+
    '<div class="tags" style="margin-top:8px">'+(g.genres||[]).map(x=>'<span class="tag g">'+esc(x)+'</span>').join("")+'<span class="tag w">'+esc(g.weight)+'</span></div>'+
-   (g.best?'<p style="margin-top:8px;font-size:.85rem">おすすめ人数: '+esc(g.best)+'</p>':"")+'</div>'+
+   (g.best?'<p style="margin-top:8px;font-size:.85rem">おすすめ人数: '+esc(g.best)+'</p>':"")+
+   '<div class="row" style="margin-top:10px"><button type="button" class="btn" id="bBring"></button></div></div>'+
    '<div class="card c0"><h3>どんなゲーム？</h3><p>'+esc(g.about)+'</p></div>'+
    '<div class="card c3"><h3>目的・勝ち方</h3><p>'+esc(r.goal)+'</p></div>'+
    (r.setup&&r.setup.length?'<div class="card c5"><h3>準備</h3><ul>'+li(r.setup)+'</ul></div>':"")+
@@ -204,10 +238,12 @@ function openGame(id,push=true){
   drawLogs();
   $("bBack").onclick=()=>history.back();
   $("bAdd").onclick=addPlay;
+  const bb=$("bBring");const lab=()=>{const on=inBring(id);bb.textContent=on?"✓ 次の集まりに持っていく（押すと外す）":"＋ 次の集まりに持っていく";bb.classList.toggle("on",on)};lab();
+  bb.onclick=()=>{toggleBring(id);lab()};
   $("sheet").hidden=false;$("sheet").scrollTop=0;document.body.style.overflow="hidden";
   if(push)history.pushState({g:id},"","#"+id);
 }
-function closeGame(){$("sheet").hidden=true;document.body.style.overflow="";curId=null;render();renderLog()}
+function closeGame(){$("sheet").hidden=true;document.body.style.overflow="";curId=null;render();renderLog();drawBring()}
 window.addEventListener("popstate",e=>{if(e.state&&e.state.g)openGame(e.state.g,false);else closeGame()});
 function whoNames(){const s=new Set();Object.values(plays).flat().forEach(l=>{String(l.who||"").split(/[、,，\s]+/).forEach(n=>n&&s.add(n));l.win&&s.add(l.win)});return [...s]}
 function drawLogs(){const l=logsOf(curId);$("dLogs").innerHTML=l.length?l.map(x=>'<div class="log"><button type="button" class="x" data-k="'+x.k+'">消す</button><span class="d">'+esc(jdate(x.date))+'</span>'+(x.who?'　'+esc(x.who):"")+(x.win?'<br>勝ち: '+esc(x.win):"")+(x.memo?'<br>'+esc(x.memo):"")+'</div>').join(""):'<p class="note">まだ記録はありません。</p>';
@@ -225,15 +261,34 @@ function renderLog(){
 }
 ["rank","allLogs"].forEach(k=>$(k).addEventListener("click",e=>{const s=e.target.closest(".stat");if(s)openGame(s.dataset.id)}));
 
+/* 持っていくタブ */
+const GF={gTitle:"title",gDate:"date",gPeople:"people",gMemo:"memo"};
+function renderBring(){Object.entries(GF).forEach(([el,k])=>$(el).value=bring[k]||"");drawBring()}
+Object.entries(GF).forEach(([el,k])=>$(el).addEventListener("input",()=>{bring[k]=$(el).value;saveBring();if(k==="people")drawBring()}));
+function drawBring(){
+  const items=bring.items.map(x=>({...x,g:G.find(g=>g.id===x.id)})).filter(x=>x.g);
+  const n=parseInt(bring.people,10);
+  const packed=items.filter(x=>x.packed).length;
+  const ng=items.filter(x=>n>0&&!(x.g.pmin<=n&&n<=x.g.pmax)).length;
+  $("gCount").textContent=items.length?items.length+"本（かばんに入れた "+packed+"本）"+(ng?"　"+n+"人で遊べないもの "+ng+"本":""):"";
+  $("gList").innerHTML=items.length?items.map(x=>{const g=x.g;const bad=n>0&&!(g.pmin<=n&&n<=g.pmax);return '<div class="bring'+(x.packed?' done':'')+'" data-id="'+g.id+'"><input type="checkbox" aria-label="'+esc(g.name)+'をかばんに入れた"'+(x.packed?' checked':'')+'><div class="nm"><b>'+esc(g.name)+'</b><small>'+esc(g.players)+'・'+esc(g.time)+(bad?'　<span class="warn">'+n+'人では遊べません</span>':'')+'</small></div><button type="button" class="x">外す</button></div>'}).join(""):'<p class="note">まだありません。目録でゲームを開き「＋ 次の集まりに持っていく」を押してください。</p>';
+}
+$("gList").addEventListener("click",e=>{const r=e.target.closest(".bring");if(!r)return;const id=r.dataset.id;
+  if(e.target.matches("input[type=checkbox]")){const it=bring.items.find(x=>x.id===id);if(it){it.packed=e.target.checked;saveBring();drawBring()}return}
+  if(e.target.closest(".x")){bring.items=bring.items.filter(x=>x.id!==id);saveBring();drawBring();toast("リストから外しました");return}
+  if(e.target.closest(".nm"))openGame(id)});
+let clrArm=0;
+$("bClear").onclick=()=>{const t=Date.now();if(t-clrArm>2500){clrArm=t;toast("もう一度押すと空にします");return}clrArm=0;bring=emptyBring();saveBring();renderBring();render();toast("空にしました")};
+
 /* タブ */
-function showTab(t){$("vList").hidden=t!=="list";$("vLog").hidden=t!=="log";$("tList").setAttribute("aria-current",String(t==="list"));$("tLog").setAttribute("aria-current",String(t==="log"));if(t==="log")renderLog();window.scrollTo(0,0)}
-$("tList").onclick=()=>showTab("list");$("tLog").onclick=()=>showTab("log");
+function showTab(t){$("vList").hidden=t!=="list";$("vLog").hidden=t!=="log";$("vBring").hidden=t!=="bring";$("tList").setAttribute("aria-current",String(t==="list"));$("tLog").setAttribute("aria-current",String(t==="log"));$("tBring").setAttribute("aria-current",String(t==="bring"));if(t==="log")renderLog();if(t==="bring")renderBring();window.scrollTo(0,0)}
+$("tList").onclick=()=>showTab("list");$("tLog").onclick=()=>showTab("log");$("tBring").onclick=()=>showTab("bring");
 $("tPick").onclick=()=>{showTab("list");const items=[...document.querySelectorAll("#list .item")];if(!items.length){toast("候補がありません");return}const b=items[Math.floor(Math.random()*items.length)];toast("今の絞り込みから選びました");openGame(b.dataset.id)};
 
 /* バックアップ */
-$("bExport").onclick=()=>{try{const blob=new Blob([JSON.stringify({app:"boardgames",version:1,exportedAt:new Date().toISOString(),plays})],{type:"application/json"});const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download="boardgames-"+today()+".json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000);toast("書き出しました")}catch(e){toast("書き出せませんでした")}};
+$("bExport").onclick=()=>{try{const blob=new Blob([JSON.stringify({app:"boardgames",version:1,exportedAt:new Date().toISOString(),plays,bring})],{type:"application/json"});const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download="boardgames-"+today()+".json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000);toast("書き出しました")}catch(e){toast("書き出せませんでした")}};
 $("bImport").onclick=()=>$("fileIn").click();
-$("fileIn").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const o=JSON.parse(await f.text());if(!o||!o.plays)throw 0;Object.entries(o.plays).forEach(([id,arr])=>{const cur=plays[id]||[];const ks=new Set(cur.map(x=>x.k));arr.forEach(x=>{if(!ks.has(x.k))cur.push(x)});plays[id]=cur});savePlays();renderLog();render();toast("読み込みました")}catch(err){toast("読み込めませんでした")}e.target.value=""};
+$("fileIn").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const o=JSON.parse(await f.text());if(!o||!o.plays)throw 0;Object.entries(o.plays).forEach(([id,arr])=>{const cur=plays[id]||[];const ks=new Set(cur.map(x=>x.k));arr.forEach(x=>{if(!ks.has(x.k))cur.push(x)});plays[id]=cur});savePlays();if(o.bring&&Array.isArray(o.bring.items)){["title","date","people","memo"].forEach(k=>{if(!bring[k]&&o.bring[k])bring[k]=o.bring[k]});o.bring.items.forEach(x=>{if(x&&x.id&&!inBring(x.id))bring.items.push({id:x.id,packed:!!x.packed})});saveBring();renderBring()}renderLog();render();toast("読み込みました")}catch(err){toast("読み込めませんでした")}e.target.value=""};
 
 render();
 if(location.hash.length>1){const id=decodeURIComponent(location.hash.slice(1));if(G.find(g=>g.id===id)){history.replaceState(null,"",location.pathname);history.pushState({g:id},"","#"+id);openGame(id,false)}}
