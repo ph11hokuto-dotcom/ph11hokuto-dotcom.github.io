@@ -84,20 +84,124 @@
   /* それでも収まらないときは、いちばん下の説明文（AI確認の補足）だけ隠す */
   body.tight footer { display: none; }
   footer { margin-top: 10px; font-size: .78rem; color: var(--text-muted); line-height: 1.7; text-align: center; }
+
+  /* ===== 記録機能（2026-11-15 追加） ===== */
+  body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+  body.compact { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
+  html.standalone body { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+  html.standalone body.compact { padding-bottom: calc(62px + env(safe-area-inset-bottom)); }
+  /* さらに収まらないときは「※前回は予定日から自動表示」の行を上の1行にまとめる */
+  .auto-note { display: none; }
+  body.tight2 .auto-note { display: inline; }
+  body.tight2 .card-line.auto { display: none; }
+  button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .name-wrap { display: flex; align-items: center; gap: 5px; min-width: 0; }
+  .name-wrap .store-name { white-space: nowrap; }
+  .mine { display: inline-flex; align-items: center; gap: 4px; font-size: .8rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .mine[hidden] { display: none; }
+  .want { border: 2px solid #e6cbd8; background: var(--surface); color: var(--text-muted); font-size: .9rem; line-height: 1; width: 28px; height: 28px; padding: 0; border-radius: 999px; }
+  .want.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; justify-content: center; gap: 8px;
+    padding: 6px 16px calc(6px + env(safe-area-inset-bottom)); background: var(--surface); box-shadow: 0 -4px 16px rgba(180, 90, 120, .12); }
+  .tabs button { flex: 1; max-width: 220px; border: 0; background: transparent; color: var(--text-muted); font-weight: 700; font-size: .95rem; padding: 8px 0; border-radius: 14px; }
+  .tabs button.on { background: var(--accent); color: #fff; }
+  .view[hidden] { display: none; }
+  .rec-title { font-weight: 800; font-size: 1.6rem; margin: 0 0 10px; }
+  .rec-actions { display: flex; gap: 8px; margin-bottom: 12px; }
+  .btn-main { flex: 1; border: 0; background: var(--accent); color: #fff; font-weight: 800; font-size: 1.05rem; padding: 14px; border-radius: 16px; box-shadow: 0 8px 20px rgba(255, 91, 140, .35); }
+  .btn-sub { border: 2px solid var(--accent); background: var(--surface); color: var(--accent); font-weight: 700; font-size: .85rem; padding: 10px 12px; border-radius: 16px; }
+  .rec-msg { font-size: .9rem; color: var(--text-muted); line-height: 1.7; background: var(--surface); border-radius: 18px; padding: 14px 16px; }
+  .group { background: var(--surface); border-radius: 18px; padding: 10px; margin-bottom: 12px; box-shadow: var(--shadow); }
+  .gh { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-weight: 700; margin: 2px 2px 4px; }
+  .gh small { font-weight: 600; font-size: .8rem; color: var(--text-muted); white-space: nowrap; }
+  .gvisits { font-size: .8rem; color: var(--text-muted); margin: 0 2px 8px; line-height: 1.8; font-variant-numeric: tabular-nums; }
+  .vchip { display: inline-block; white-space: nowrap; margin-right: 6px; }
+  .vchip button { border: 0; background: #eee3ea; color: var(--text-muted); border-radius: 999px; font-size: .72rem; padding: 0 7px; margin-left: 2px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .ph { position: relative; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: #eadfe6; border: 0; padding: 0; }
+  .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ph .tag { position: absolute; left: 4px; bottom: 4px; font-size: .74rem; font-weight: 800; padding: 2px 7px; border-radius: 8px; background: rgba(255, 255, 255, .92); color: #3a2b3f; }
+  .ph .ok { position: absolute; right: 4px; top: 4px; font-size: .7rem; font-weight: 800; padding: 2px 6px; border-radius: 8px; background: var(--status-normal); color: #fff; }
+  .ph .ok.ng { background: var(--text-muted); }
+  .more { display: block; margin: 4px auto 0; border: 0; background: transparent; color: var(--accent); font-weight: 700; padding: 8px; }
+  /* 追加・編集の画面（下からかぶせる） */
+  .sheet-bg { position: fixed; inset: 0; z-index: 40; background: rgba(58, 43, 63, .45); display: flex; align-items: flex-end; justify-content: center; }
+  .sheet-bg[hidden] { display: none; }
+  .sheet { width: 100%; max-width: 460px; max-height: 94%; overflow-y: auto; overscroll-behavior: contain; background: linear-gradient(160deg, var(--bg-a) 0%, var(--bg-b) 60%, var(--bg-c) 100%);
+    border-radius: 24px 24px 0 0; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); }
+  .sheet-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .sheet-head b { font-size: 1.2rem; }
+  .x { border: 0; background: var(--surface); border-radius: 999px; width: 36px; height: 36px; font-size: 1.1rem; color: var(--text-muted); }
+  .preview { width: 100%; max-height: 30vh; object-fit: contain; border-radius: 16px; background: #eadfe6; display: block; margin-bottom: 10px; }
+  .preview.loading { min-height: 160px; }
+  .box { background: var(--surface); border-radius: 18px; padding: 12px; box-shadow: var(--shadow); }
+  .box h4 { margin: 0 0 6px; font-size: .9rem; display: flex; align-items: center; gap: 8px; }
+  .box h4 input { font: inherit; font-size: .9rem; border: 2px solid #f0d3df; border-radius: 10px; padding: 3px 8px; background: #fff; color: var(--text); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .chip { border: 0; background: var(--bg-b); font-size: .8rem; font-weight: 700; padding: 8px 0; width: calc((100% - 36px) / 7); text-align: center; border-radius: 10px; white-space: nowrap; }
+  .chips.store .chip { width: auto; flex: 1 1 auto; padding: 8px 6px; }
+  .chip.sel { background: var(--accent); color: #fff; }
+  .two { display: flex; gap: 8px; }
+  .two button { flex: 1; border: 0; font-weight: 800; font-size: 1rem; padding: 13px 6px; border-radius: 12px; }
+  .b-sent { background: var(--status-normal); color: #fff; }
+  .b-unsent { background: #eee3ea; color: var(--text-muted); }
+  .b-sent.dim, .b-unsent.dim { opacity: .45; }
+  #sheetBtns .b-unsent:not(.dim) { box-shadow: inset 0 0 0 2px var(--text-muted); }
+  .b-del { background: transparent !important; color: var(--status-closed) !important; border: 2px solid var(--status-closed) !important; }
+  .hint { font-size: .78rem; color: var(--text-muted); margin: 8px 2px 0; line-height: 1.6; }
+  .toast { position: fixed; left: 50%; bottom: calc(80px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 60; background: #3a2b3f; color: #fff;
+    font-size: .88rem; font-weight: 700; padding: 10px 18px; border-radius: 999px; box-shadow: var(--shadow); white-space: nowrap; }
+  .toast[hidden] { display: none; }
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap view" id="routeView">
   <header>
     <p class="app-title">ルートチェンジ・カレンダー</p>
-    <p class="app-sub" id="dataNote">読み込み中です…</p>
+    <p class="app-sub"><span id="dataNote">読み込み中です…</span><span class="auto-note">／※は予定日から</span></p>
     <p class="common">共通 営業 平日10:00〜23:00／土日祝〜21:00<br>セット 初日17:00 close／最終日18:30 open</p>
   </header>
   <div class="list" id="cardList"></div>
   <footer>
-    NOBOROCK 5店舗・共通と違うところは太字・AIが毎週確認
+    NOBOROCK 5店舗・共通と違うところは太字・AIが毎週確認<br>☆＝次のルートセットまでに行きたい店・n回＝今期に行った回数
   </footer>
 </div>
+
+<!-- 記録の画面 -->
+<div class="wrap view" id="recView" hidden style="margin-top:0">
+  <p class="rec-title">記録</p>
+  <div class="rec-actions" id="recActions" hidden>
+    <button class="btn-main" id="addPhotoBtn">＋ 写真を追加</button>
+    <button class="btn-sub" id="addVisitBtn">今日行った<br>（写真なし）</button>
+  </div>
+  <input type="file" id="fileInput" accept="image/*" hidden>
+  <div id="recList"><p class="rec-msg">読み込み中です…</p></div>
+</div>
+
+<div class="tabs">
+  <button class="on" data-view="routeView">ルートセット</button>
+  <button data-view="recView">記録</button>
+</div>
+
+<!-- 追加・編集の画面 -->
+<div class="sheet-bg" id="sheetBg" hidden>
+  <div class="sheet" role="dialog" aria-modal="true">
+    <div class="sheet-head"><b id="sheetTitle">写真を追加</b><button class="x" id="sheetClose" aria-label="閉じる">✕</button></div>
+    <img class="preview" id="sheetImg" alt="">
+    <div class="box">
+      <h4>日付 <input type="date" id="sheetDate"></h4>
+      <h4>店</h4>
+      <div class="chips store" id="storeChips"></div>
+      <div id="gradeArea">
+        <h4>グレード</h4>
+        <div class="chips" id="gradeChips"></div>
+      </div>
+      <div class="two" id="sheetBtns"></div>
+      <p class="hint" id="sheetHint"></p>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
 
 <script>
   var STORE_META = {
@@ -133,6 +237,8 @@
     return el;
   }
 
+  var CUR = {};   // 店ごとの「今の期間の始まり」（前回のルートセット日）
+  var KNOWN = {}; // 店ごとに分かっているルートセット日
   function render(docsById) {
     var today = new Date();
     var latestCheck = null;
@@ -154,7 +260,16 @@
       card.dataset.store = id;
       var top = document.createElement('div');
       top.className = 'card-top';
-      top.appendChild(textEl('span', 'store-name', info.name));
+      var nameWrap = document.createElement('span');
+      nameWrap.className = 'name-wrap';
+      nameWrap.appendChild(textEl('span', 'store-name', info.name));
+      // 自分の記録（☆＝行きたい、n回＝今期に行った回数）
+      var mine = document.createElement('span');
+      mine.className = 'mine';
+      mine.dataset.store = id;
+      mine.hidden = true;
+      nameWrap.appendChild(mine);
+      top.appendChild(nameWrap);
       var badgeEl = document.createElement('span');
       badgeEl.className = 'badge';
       top.appendChild(badgeEl);
@@ -173,6 +288,9 @@
         var nextActive = hasNext && !nextDone;
         var lastSet = data.prevRouteSet, lastSetFromPlan = false;
         if (nextDone && next.endDate > lastSet) { lastSet = next.endDate; lastSetFromPlan = true; }
+        CUR[id] = lastSet;
+        KNOWN[id] = [data.prevRouteSet];
+        if (nextDone) KNOWN[id].push(next.endDate);
 
         // ルートセット後1週間は混雑期間
         var sinceSet = Math.round(daysBetween(dateOnly(lastSet), todayD));
@@ -194,7 +312,7 @@
         // 1画面に収めるため、前回と次回は1行にまとめる
         lines.push('前回 ' + formatMDW(lastSet) + (lastSetFromPlan ? '※' : '') + '／次回 ' +
           (nextActive ? formatMDW(next.startDate) + '〜' + formatMDW(next.endDate) : '未確認'));
-        if (lastSetFromPlan) lines.push('※前回は予定日から自動表示');
+        if (lastSetFromPlan) lines.push({ text: '※前回は予定日から自動表示', auto: true });
         // 営業時間・初日／最終日の時間は、全店共通と違うときだけ出す
         var h = data.regularHours, hourParts = [];
         if (h && h.weekday && h.weekday !== STD.weekday) hourParts.push('平日' + h.weekday);
@@ -209,8 +327,8 @@
         if (data.notice && data.notice.date && data.notice.label) lines.push({ text: 'お知らせ ' + formatMDW(data.notice.date) + ' ' + data.notice.label, diff: true });
       }
       lines.forEach(function (line) {
-        var isDiff = typeof line === 'object';
-        card.appendChild(textEl('div', 'card-line' + (isDiff ? ' diff' : ''), isDiff ? line.text : line));
+        var isObj = typeof line === 'object', isDiff = isObj && !line.auto;
+        card.appendChild(textEl('div', 'card-line' + (isDiff ? ' diff' : '') + (isObj && line.auto ? ' auto' : ''), isObj ? line.text : line));
       });
       list.appendChild(card);
     });
@@ -224,26 +342,392 @@
   // 画面に収まっているかを確かめて、はみ出すときは詰めた表示にする
   function fitToScreen() {
     var body = document.body;
-    body.classList.remove('compact', 'tight');
+    body.classList.remove('compact', 'tight', 'tight2');
+    if (document.getElementById('routeView').hidden) return; // 記録の画面はふつうにスクロールする
     if (body.scrollHeight > body.clientHeight + 1) body.classList.add('compact');
     if (body.scrollHeight > body.clientHeight + 1) body.classList.add('tight');
+    if (body.scrollHeight > body.clientHeight + 1) body.classList.add('tight2');
   }
   window.addEventListener('resize', fitToScreen);
   window.addEventListener('orientationchange', fitToScreen);
 
   // iPhoneで画面を引っぱったときの揺れを止める（収まっているときはスクロールそのものを止める）
   document.addEventListener('touchmove', function (e) {
+    if (e.target.closest && e.target.closest('.sheet')) return; // 追加・編集の画面の中はスクロールしてよい
     var body = document.body;
     if (body.scrollHeight <= body.clientHeight + 1) e.preventDefault();
   }, { passive: false });
 
+  // ===================== 記録機能（2026-11-15 追加） =====================
+  // 保存先はGoogleのApps Script。設定リンク（URLの後ろの #c=保存先ID.合言葉）で開くと使えるようになる
+  var GRADES = ['10級', '9級', '8級', '7級', '6級', '5級', '4級', '3級', '2級', '1級', '初段', '二段', '三段'];
+  var THUMB_PX = 240, FULL_PX = 1600;     // 小さい画像の一辺／送る写真の長い辺（px）
+  var GROUPS_FIRST = 4;                   // 記録画面で最初に出すまとまりの数
+  var LS_CFG = 'routeRecCfg', LS_DB = 'routeRecDb', LS_LAST = 'routeRecLastStore', LS_TH = 'rt_';
+  var DB = { problems: [], visits: [], wants: [] }, dbLoaded = false, cfg = null, showGroups = GROUPS_FIRST;
+  var thumbMem = {}, fullMem = {};
+
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+  (function readCfg() {
+    var m = location.hash.match(/c=([^.&]+)\.([^&]+)/);
+    if (m) { cfg = { id: m[1], k: decodeURIComponent(m[2]) }; lsSet(LS_CFG, JSON.stringify(cfg)); return; }
+    try { cfg = JSON.parse(lsGet(LS_CFG) || 'null'); } catch (e) { cfg = null; }
+  })();
+  try { var cached = JSON.parse(lsGet(LS_DB) || 'null'); if (cached) { DB = cached; dbLoaded = true; } } catch (e) {}
+
+  function api(params, body) {
+    var url = 'https://script.google.com/macros/s/' + cfg.id + '/exec';
+    var req = body
+      ? fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ k: cfg.k }, body)) })
+      : fetch(url + '?k=' + encodeURIComponent(cfg.k) + '&' + params + '&t=' + Date.now());
+    return req.then(function (r) { return r.json(); }).then(function (j) { if (!j.ok) throw new Error(j.error || 'error'); return j; });
+  }
+  function saveDbCache() { lsSet(LS_DB, JSON.stringify(DB)); }
+  function todayIso() { return isoOf(new Date()); }
+  function storeName(id) { return (STORE_META[id] || {}).name || id; }
+
+  // その日がどのルートセット期間か（分かっているルートセット日のうち、その日以前で一番新しいもの）
+  function periodOf(store, date) {
+    var cands = (KNOWN[store] || []).slice();
+    DB.problems.forEach(function (p) { if (p.store === store && p.period) cands.push(p.period); });
+    var best = '';
+    cands.forEach(function (c) { if (c && c <= date && c > best) best = c; });
+    return best;
+  }
+  function visitDates(store, from) {
+    var set = {};
+    DB.problems.forEach(function (p) { if (p.store === store && p.date >= from) set[p.date] = 1; });
+    DB.visits.forEach(function (v) { if (v.store === store && v.date >= from) set[v.date] = 1; });
+    return Object.keys(set).sort();
+  }
+
+  // ルートセット画面のカードに「行きたい」と「今期 n回」を出す
+  function renderMine() {
+    var nodes = document.querySelectorAll('.mine');
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i], id = el.dataset.store;
+      el.innerHTML = '';
+      if (!cfg || !dbLoaded || !CUR[id]) { el.hidden = true; continue; }
+      el.hidden = false;
+      var on = DB.wants.some(function (w) { return w.store === id && w.period === CUR[id]; });
+      var b = textEl('button', 'want' + (on ? ' on' : ''), on ? '★' : '☆');
+      b.dataset.store = id;
+      b.setAttribute('aria-label', on ? '行きたい（タップで外す）' : '行きたいにする');
+      b.addEventListener('click', toggleWant);
+      el.appendChild(b);
+      el.appendChild(textEl('span', '', visitDates(id, CUR[id]).length + '回'));
+    }
+    if (!document.getElementById('routeView').hidden) fitToScreen();
+  }
+  function toggleWant(e) {
+    var id = e.currentTarget.dataset.store, period = CUR[id];
+    var on = DB.wants.some(function (w) { return w.store === id && w.period === period; });
+    DB.wants = DB.wants.filter(function (w) { return w.store !== id; });
+    if (!on) DB.wants.push({ store: id, period: period });
+    saveDbCache(); renderMine();
+    api(null, { a: on ? 'unwant' : 'want', store: id, period: period }).catch(function () { toast('保存できませんでした。通信を確かめてください'); });
+  }
+
+  // 記録画面
+  function gradeIdx(g) { return GRADES.indexOf(g); }
+  function renderRec() {
+    var list = document.getElementById('recList');
+    document.getElementById('recActions').hidden = !cfg;
+    list.innerHTML = '';
+    if (!cfg) {
+      list.appendChild(textEl('p', 'rec-msg', '記録を使うには、Claudeが渡した「設定リンク」から一度開いてください（ホーム画面のアイコンも、設定リンクを開いてから追加し直す）。'));
+      return;
+    }
+    if (!dbLoaded) { list.appendChild(textEl('p', 'rec-msg', '読み込み中です…')); return; }
+    // 店×期間でまとめる
+    var groups = {};
+    function g(store, period) {
+      var key = store + '|' + period;
+      if (!groups[key]) groups[key] = { store: store, period: period, items: [], dates: {}, manual: {}, last: '' };
+      return groups[key];
+    }
+    DB.problems.forEach(function (p) {
+      var gr = g(p.store, p.period || periodOf(p.store, p.date));
+      gr.items.push(p); gr.dates[p.date] = 1; if (p.date > gr.last) gr.last = p.date;
+    });
+    DB.visits.forEach(function (v) {
+      var gr = g(v.store, periodOf(v.store, v.date));
+      gr.dates[v.date] = 1; gr.manual[v.date] = 1; if (v.date > gr.last) gr.last = v.date;
+    });
+    var arr = Object.keys(groups).map(function (k) { return groups[k]; });
+    if (!arr.length) { list.appendChild(textEl('p', 'rec-msg', 'まだ記録がありません。ジムで登ったら「＋ 写真を追加」から、グレードと完登を選んで保存します。')); return; }
+    arr.sort(function (a, b) { return a.last < b.last ? 1 : a.last > b.last ? -1 : 0; });
+    // 同じ店の次の期間の始まり（期間の終わりの表示用）
+    var starts = {};
+    arr.forEach(function (x) { if (x.period) (starts[x.store] = starts[x.store] || []).push(x.period); });
+
+    var need = [];
+    arr.slice(0, showGroups).forEach(function (gr) {
+      var box = document.createElement('div');
+      box.className = 'group';
+      var label = storeName(gr.store) + ' ';
+      if (gr.period) {
+        var later = (starts[gr.store] || []).filter(function (s) { return s > gr.period; }).sort()[0];
+        if (later) { var e = dateOnly(later); e.setDate(e.getDate() - 1); label += formatMD(gr.period) + '〜' + formatMD(isoOf(e)); }
+        else label += formatMD(gr.period) + '〜';
+      } else label += '（期間不明）';
+      var sentList = gr.items.filter(function (p) { return p.sent; });
+      var best = sentList.reduce(function (m, p) { return gradeIdx(p.grade) > gradeIdx(m) ? p.grade : m; }, '');
+      var head = document.createElement('div');
+      head.className = 'gh';
+      head.appendChild(textEl('span', '', label));
+      head.appendChild(textEl('small', '', '完登' + sentList.length + '本' + (best ? '・最高 ' + best : '')));
+      box.appendChild(head);
+      var vd = document.createElement('div');
+      vd.className = 'gvisits';
+      vd.appendChild(document.createTextNode('行った日 '));
+      Object.keys(gr.dates).sort().forEach(function (d) {
+        var c = textEl('span', 'vchip', formatMDW(d));
+        if (gr.manual[d] && !gr.items.some(function (p) { return p.date === d; })) {
+          var del = textEl('button', '', '×');
+          del.title = 'この行った日を消す';
+          del.addEventListener('click', function () { removeVisit(gr.store, d); });
+          c.appendChild(del);
+        }
+        vd.appendChild(c);
+      });
+      box.appendChild(vd);
+      if (gr.items.length) {
+        var grid = document.createElement('div');
+        grid.className = 'grid';
+        gr.items.sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : gradeIdx(b.grade) - gradeIdx(a.grade); });
+        gr.items.forEach(function (p) {
+          var ph = document.createElement('button');
+          ph.className = 'ph';
+          var img = document.createElement('img');
+          img.alt = p.grade;
+          img.dataset.thumb = p.id;
+          var t = thumbMem[p.id] || lsGet(LS_TH + p.id);
+          if (t) { thumbMem[p.id] = t; img.src = t; } else need.push(p.id);
+          ph.appendChild(img);
+          ph.appendChild(textEl('span', 'tag', p.grade));
+          ph.appendChild(textEl('span', 'ok' + (p.sent ? '' : ' ng'), p.sent ? '完登' : '未完登'));
+          ph.addEventListener('click', function () { openEdit(p); });
+          grid.appendChild(ph);
+        });
+        box.appendChild(grid);
+      }
+      list.appendChild(box);
+    });
+    if (arr.length > showGroups) {
+      var more = textEl('button', 'more', '前の記録をもっと見る（あと' + (arr.length - showGroups) + '）');
+      more.addEventListener('click', function () { showGroups += GROUPS_FIRST; renderRec(); });
+      list.appendChild(more);
+    }
+    loadThumbs(need);
+  }
+  function loadThumbs(ids) {
+    if (!ids.length) return;
+    var batch = ids.slice(0, 20), rest = ids.slice(20);
+    api('a=thumbs&ids=' + batch.join(',')).then(function (j) {
+      Object.keys(j.thumbs).forEach(function (id) {
+        thumbMem[id] = j.thumbs[id];
+        lsSet(LS_TH + id, j.thumbs[id]);
+        var imgs = document.querySelectorAll('img[data-thumb="' + id + '"]');
+        for (var i = 0; i < imgs.length; i++) imgs[i].src = j.thumbs[id];
+      });
+      loadThumbs(rest);
+    }).catch(function () {});
+  }
+
+  function refreshDb() {
+    if (!cfg) { renderRec(); return; }
+    api('a=list').then(function (j) {
+      DB = { problems: j.problems, visits: j.visits, wants: j.wants };
+      dbLoaded = true; saveDbCache(); renderMine(); renderRec();
+    }).catch(function () {
+      if (!dbLoaded) document.getElementById('recList').innerHTML = '<p class="rec-msg">記録を読み込めませんでした。通信状態を確かめて、開き直してください。</p>';
+    });
+  }
+
+  // ---- 追加・編集の画面 ----
+  var sheet = { mode: '', store: '', grade: '', sent: null, image: null, thumb: null, item: null, confirmDel: false };
+  function $(id) { return document.getElementById(id); }
+  function toast(msg, ms) {
+    var t = $('toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(toast.tm); if (ms !== 0) toast.tm = setTimeout(function () { t.hidden = true; }, ms || 2200);
+  }
+  function drawChips() {
+    var old = document.querySelectorAll('#sheetBg .two.extra');
+    for (var oi = 0; oi < old.length; oi++) old[oi].parentNode.removeChild(old[oi]);
+    var sc = $('storeChips'); sc.innerHTML = '';
+    STORE_ORDER.forEach(function (id) {
+      var b = textEl('button', 'chip' + (sheet.store === id ? ' sel' : ''), storeName(id).replace(/店$/, ''));
+      b.addEventListener('click', function () { sheet.store = id; drawChips(); });
+      sc.appendChild(b);
+    });
+    var gc = $('gradeChips'); gc.innerHTML = '';
+    GRADES.forEach(function (gname) {
+      var b = textEl('button', 'chip' + (sheet.grade === gname ? ' sel' : ''), gname);
+      b.addEventListener('click', function () { sheet.grade = gname; drawChips(); });
+      gc.appendChild(b);
+    });
+    var bt = $('sheetBtns'); bt.innerHTML = '';
+    if (sheet.mode === 'add') {
+      [[true, '完登で保存', 'b-sent'], [false, '未完登で保存', 'b-unsent']].forEach(function (x) {
+        var b = textEl('button', x[2] + (sheet.grade ? '' : ' dim'), x[1]);
+        b.addEventListener('click', function () { saveAdd(x[0]); });
+        bt.appendChild(b);
+      });
+      $('sheetHint').textContent = 'グレードを選んで、完登か未完登を押すと保存します。';
+    } else if (sheet.mode === 'visit') {
+      var b = textEl('button', 'b-sent', '行った日として保存');
+      b.addEventListener('click', saveVisit);
+      bt.appendChild(b);
+      $('sheetHint').textContent = '写真を撮らなかった日も、今期の回数に入ります。';
+    } else {
+      [[true, '完登'], [false, '未完登']].forEach(function (x) {
+        var b = textEl('button', (x[0] ? 'b-sent' : 'b-unsent') + (sheet.sent === x[0] ? '' : ' dim'), x[1]);
+        b.addEventListener('click', function () { sheet.sent = x[0]; drawChips(); });
+        bt.appendChild(b);
+      });
+      var row2 = document.createElement('div');
+      row2.className = 'two extra';
+      row2.style.marginTop = '8px';
+      var del = textEl('button', 'b-del', sheet.confirmDel ? '本当に消す' : '消す');
+      del.addEventListener('click', function () { if (sheet.confirmDel) saveDelete(); else { sheet.confirmDel = true; drawChips(); } });
+      var ok = textEl('button', 'b-sent', '直して保存');
+      ok.style.background = 'var(--accent)';
+      ok.addEventListener('click', saveEdit);
+      row2.appendChild(del); row2.appendChild(ok);
+      bt.parentNode.insertBefore(row2, bt.nextSibling);
+      $('sheetHint').textContent = sheet.confirmDel ? 'もう一度押すと、この記録と写真を消します（写真はドライブのゴミ箱に30日残ります）。' : '';
+    }
+  }
+  function openSheet(mode, title) {
+    sheet.mode = mode; sheet.confirmDel = false;
+    $('toast').hidden = true;
+    $('sheetTitle').textContent = title;
+    $('gradeArea').hidden = mode === 'visit';
+    drawChips();
+    $('sheetBg').hidden = false;
+  }
+  function closeSheet() { $('sheetBg').hidden = true; $('sheetImg').removeAttribute('src'); }
+  $('sheetClose').addEventListener('click', closeSheet);
+  $('sheetBg').addEventListener('click', function (e) { if (e.target === $('sheetBg')) closeSheet(); });
+
+  // 写真を縮めてJPEGにする（maxは長い辺、squareなら真ん中を正方形に切る）
+  function shrink(img, max, square, q) {
+    var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height, sx = 0, sy = 0, sw = w, sh = h;
+    if (square) { var s = Math.min(w, h); sx = (w - s) / 2; sy = (h - s) / 2; sw = sh = s; }
+    var r = Math.min(1, max / Math.max(sw, sh));
+    var c = document.createElement('canvas');
+    c.width = Math.round(sw * r); c.height = Math.round(sh * r);
+    c.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', q);
+  }
+  $('addPhotoBtn').addEventListener('click', function () { $('fileInput').value = ''; $('fileInput').click(); });
+  $('fileInput').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    if (!f) return;
+    var url = URL.createObjectURL(f), img = new Image();
+    img.onload = function () {
+      sheet.image = shrink(img, FULL_PX, false, 0.82);
+      sheet.thumb = shrink(img, THUMB_PX, true, 0.7);
+      URL.revokeObjectURL(url);
+      sheet.store = lsGet(LS_LAST) || 'omiya'; sheet.grade = ''; sheet.item = null;
+      $('sheetDate').value = todayIso();
+      $('sheetImg').hidden = false; $('sheetImg').classList.remove('loading'); $('sheetImg').src = sheet.image;
+      openSheet('add', '写真を追加');
+    };
+    img.onerror = function () { toast('この写真は読み込めませんでした'); };
+    img.src = url;
+  });
+  $('addVisitBtn').addEventListener('click', function () {
+    sheet.store = lsGet(LS_LAST) || 'omiya'; sheet.item = null;
+    $('sheetDate').value = todayIso();
+    $('sheetImg').hidden = true;
+    openSheet('visit', '今日行った（写真なし）');
+  });
+  function openEdit(p) {
+    sheet.item = p; sheet.store = p.store; sheet.grade = p.grade; sheet.sent = p.sent;
+    $('sheetDate').value = p.date;
+    var im = $('sheetImg');
+    im.hidden = false;
+    im.src = fullMem[p.id] || thumbMem[p.id] || '';
+    if (!fullMem[p.id]) {
+      im.classList.add('loading');
+      api('a=photo&id=' + encodeURIComponent(p.id)).then(function (j) {
+        fullMem[p.id] = j.data;
+        if (sheet.item === p) { im.src = j.data; im.classList.remove('loading'); }
+      }).catch(function () { im.classList.remove('loading'); });
+    }
+    openSheet('edit', formatMDW(p.date) + ' ' + storeName(p.store));
+  }
+
+  function saveAdd(sent) {
+    if (!sheet.grade) { toast('先にグレードを選んでください'); return; }
+    var date = $('sheetDate').value || todayIso();
+    var rec = { date: date, store: sheet.store, grade: sheet.grade, sent: sent, period: periodOf(sheet.store, date) };
+    var thumb = sheet.thumb;
+    lsSet(LS_LAST, sheet.store);
+    closeSheet();
+    toast('保存中…', 0);
+    api(null, Object.assign({ a: 'add', image: sheet.image, thumb: thumb }, rec)).then(function (j) {
+      rec.id = j.id; thumbMem[j.id] = thumb; lsSet(LS_TH + j.id, thumb);
+      DB.problems.push(rec); saveDbCache(); renderMine(); renderRec();
+      toast('保存しました（' + rec.grade + '・' + (sent ? '完登' : '未完登') + '）');
+    }).catch(function () { toast('保存できませんでした。もう一度追加してください', 4000); });
+  }
+  function saveVisit() {
+    var date = $('sheetDate').value || todayIso(), store = sheet.store;
+    lsSet(LS_LAST, store);
+    closeSheet();
+    DB.visits = DB.visits.filter(function (v) { return !(v.date === date && v.store === store); });
+    DB.visits.push({ date: date, store: store }); saveDbCache(); renderMine(); renderRec();
+    api(null, { a: 'visit', date: date, store: store }).then(function () { toast('行った日を保存しました'); })
+      .catch(function () { toast('保存できませんでした。通信を確かめてください', 4000); });
+  }
+  function removeVisit(store, date) {
+    DB.visits = DB.visits.filter(function (v) { return !(v.date === date && v.store === store); });
+    saveDbCache(); renderMine(); renderRec();
+    api(null, { a: 'unvisit', date: date, store: store }).catch(function () { toast('消せませんでした。通信を確かめてください', 4000); });
+  }
+  function saveEdit() {
+    var p = sheet.item, date = $('sheetDate').value || p.date;
+    var upd = { date: date, store: sheet.store, grade: sheet.grade, sent: sheet.sent, period: periodOf(sheet.store, date) };
+    closeSheet();
+    toast('保存中…', 0);
+    api(null, Object.assign({ a: 'update', id: p.id }, upd)).then(function () {
+      Object.assign(p, upd); saveDbCache(); renderMine(); renderRec(); toast('直しました');
+    }).catch(function () { toast('保存できませんでした。通信を確かめてください', 4000); });
+  }
+  function saveDelete() {
+    var p = sheet.item;
+    closeSheet();
+    toast('消しています…', 0);
+    api(null, { a: 'delete', id: p.id }).then(function () {
+      DB.problems = DB.problems.filter(function (x) { return x.id !== p.id; });
+      try { localStorage.removeItem(LS_TH + p.id); } catch (e) {}
+      saveDbCache(); renderMine(); renderRec(); toast('消しました');
+    }).catch(function () { toast('消せませんでした。通信を確かめてください', 4000); });
+  }
+
+  // ---- タブの切り替え ----
+  var tabBtns = document.querySelectorAll('.tabs button');
+  for (var ti = 0; ti < tabBtns.length; ti++) tabBtns[ti].addEventListener('click', function () {
+    var v = this.dataset.view;
+    for (var j = 0; j < tabBtns.length; j++) tabBtns[j].classList.toggle('on', tabBtns[j] === this);
+    $('routeView').hidden = v !== 'routeView';
+    $('recView').hidden = v !== 'recView';
+    document.body.scrollTop = 0;
+    if (v === 'routeView') fitToScreen(); else { document.body.classList.remove('compact', 'tight', 'tight2'); renderRec(); }
+  });
+
   fetch('data.json?t=' + Date.now(), { cache: 'no-store' })
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function (d) { render(d.stores || {}); fitToScreen(); })
+    .then(function (d) { render(d.stores || {}); fitToScreen(); renderMine(); refreshDb(); })
     .catch(function () {
       document.getElementById('dataNote').textContent = 'データを読み込めませんでした。通信状態を確かめて、開き直してください。';
       render({});
       fitToScreen();
+      refreshDb();
     });
 </script>
 </body>
