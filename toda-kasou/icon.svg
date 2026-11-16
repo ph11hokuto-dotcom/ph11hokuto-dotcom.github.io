@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" width="512" height="512"><defs><clipPath id="sq"><rect width="512" height="512" rx="112"/></clipPath><linearGradient id="night" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0A1F3D"/><stop offset=".55" stop-color="#123B6B"/><stop offset="1" stop-color="#0D5C8A"/>
+    </linearGradient><symbol id="boat" viewBox="-70 0 270 60" overflow="visible">
+      <path d="M10 42 L-64 18 L-38 40 L-68 58 Z" fill="#FFFFFF" opacity=".75"/>
+      <path d="M4 30 L140 24 Q186 26 200 44 L12 58 Z" fill="#EEF2F6" stroke="#0B1B2B" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M20 46 L176 38" stroke="currentColor" stroke-width="9" stroke-linecap="round"/>
+      <path d="M36 30 L118 26 L104 12 L56 14 Z" fill="#0B1B2B"/>
+      <circle cx="72" cy="6" r="16" fill="currentColor" stroke="#0B1B2B" stroke-width="4"/>
+      <path d="M74 1 L90 4" stroke="#0B1B2B" stroke-width="6" stroke-linecap="round"/>
+    </symbol></defs>
+      <g clip-path="url(#sq)">
+        <rect width="512" height="512" fill="url(#night)"/>
+        <path d="M560 520 C 470 480, 470 300, 380 270 C 320 252, 250 262, 170 290" fill="none" stroke="#FFFFFF" stroke-width="40" stroke-linecap="round" opacity=".25"/>
+        <path d="M560 400 C 500 330, 480 190, 400 160 C 340 140, 280 150, 230 170" fill="none" stroke="#FFFFFF" stroke-width="32" stroke-linecap="round" opacity=".18"/>
+        <circle cx="390" cy="380" r="44" fill="#FF8A1F" stroke="#0B1B2B" stroke-width="6"/>
+        <ellipse cx="376" cy="364" rx="13" ry="10" fill="#FFD7A8"/>
+        <path d="M338 418 Q390 438 442 418" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" opacity=".5"/>
+        <g transform="translate(250 300) scale(-1 1) rotate(-14)"><use href="#boat" x="-190" y="-42" width="380" height="84" style="color:#1E88E5"/></g>
+        <g transform="translate(300 170) scale(-1 1) rotate(-10)"><use href="#boat" x="-190" y="-42" width="380" height="84" style="color:#FDD835"/></g>
+      </g>
+    </svg>
