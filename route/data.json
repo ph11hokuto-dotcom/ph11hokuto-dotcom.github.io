@@ -1,7 +1,7 @@
 {
   "stores": {
     "asakusa": {
-      "lastChecked": "2026-11-16 08:48",
+      "lastChecked": "2026-11-23 08:48",
       "nextRouteSet": {
         "startDate": "2026-12-06",
         "endDate": "2026-12-08",
@@ -15,7 +15,7 @@
       }
     },
     "ikebukuro": {
-      "lastChecked": "2026-11-16 08:48",
+      "lastChecked": "2026-11-23 08:48",
       "nextRouteSet": {
         "startDate": "2026-12-06",
         "endDate": "2026-12-08",
@@ -29,7 +29,7 @@
       }
     },
     "omiya": {
-      "lastChecked": "2026-11-16 08:48",
+      "lastChecked": "2026-11-23 08:48",
       "nextRouteSet": {
         "startDate": "2026-11-29",
         "endDate": "2026-12-01",
@@ -43,7 +43,7 @@
       }
     },
     "takadanobaba": {
-      "lastChecked": "2026-11-16 08:48",
+      "lastChecked": "2026-11-23 08:48",
       "nextRouteSet": {
         "startDate": "2026-11-29",
         "endDate": "2026-12-01",
@@ -61,7 +61,7 @@
       }
     },
     "shinjuku": {
-      "lastChecked": "2026-11-16 08:48",
+      "lastChecked": "2026-11-23 08:48",
       "nextRouteSet": {
         "startDate": "2026-11-23",
         "endDate": "2026-11-25",
