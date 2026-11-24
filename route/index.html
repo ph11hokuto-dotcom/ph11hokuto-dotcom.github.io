@@ -135,6 +135,20 @@
   .x { border: 0; background: var(--surface); border-radius: 999px; width: 36px; height: 36px; font-size: 1.1rem; color: var(--text-muted); }
   .preview { width: 100%; max-height: 30vh; object-fit: contain; border-radius: 16px; background: #eadfe6; display: block; margin-bottom: 10px; }
   .preview.loading { min-height: 160px; }
+  /* エナジー中浦和：壁の写真にスタートホールドの丸を付ける */
+  .pv { position: relative; margin-bottom: 10px; }
+  .pv .preview { margin-bottom: 0; }
+  .pv.mark .preview { max-height: none; height: auto; }
+  .pv.mark { touch-action: manipulation; cursor: crosshair; }
+  .dots { position: absolute; inset: 0; pointer-events: none; }
+  .dot { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; border: 3px solid; box-shadow: 0 0 0 1.5px #fff, inset 0 0 0 1.5px #fff; }
+  .dot.old { opacity: .9; }
+  .ph .dot { width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-width: 2px; box-shadow: 0 0 0 1px #fff; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: .8rem; color: var(--text-muted); margin: -2px 2px 10px; font-variant-numeric: tabular-nums; }
+  .legend[hidden] { display: none; }
+  .legend span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .legend i { width: 11px; height: 11px; border-radius: 50%; border: 3px solid; display: inline-block; }
+  .legend .cur { color: var(--text); font-weight: 800; }
   .rot { display: flex; gap: 8px; margin: -2px 0 10px; }
   .rot[hidden] { display: none; }
   .rot button { flex: 1; border: 2px solid var(--accent); background: var(--surface); color: var(--accent); font-weight: 700; font-size: .9rem; padding: 8px 6px; border-radius: 12px; }
@@ -191,10 +205,11 @@
 <div class="sheet-bg" id="sheetBg" hidden>
   <div class="sheet" role="dialog" aria-modal="true">
     <div class="sheet-head"><b id="sheetTitle">写真を追加</b><button class="x" id="sheetClose" aria-label="閉じる">✕</button></div>
-    <img class="preview" id="sheetImg" alt="">
+    <div class="pv" id="pvWrap"><img class="preview" id="sheetImg" alt=""><div class="dots" id="dots"></div></div>
+    <div class="legend" id="legend" hidden></div>
     <div class="rot" id="rotBar" hidden><button id="rotL" aria-label="左に90度回す">⟲ 左に90°</button><button id="rotR" aria-label="右に90度回す">右に90° ⟳</button></div>
     <div class="box">
-      <h4>日付 <input type="date" id="sheetDate"></h4>
+      <h4><span id="dateLabel">日付</span> <input type="date" id="sheetDate"></h4>
       <h4>店</h4>
       <div class="chips store" id="storeChips"></div>
       <div id="gradeArea">
@@ -217,6 +232,9 @@
     shinjuku: { name: '新宿店', url: 'https://noborock-climbing.com/program/%e6%96%b0%e5%ae%bf%e5%ba%97/' }
   };
   var STORE_ORDER = ['omiya', 'ikebukuro', 'asakusa', 'takadanobaba', 'shinjuku'];
+  // 記録だけする店（ルートセットの画面には出さない）
+  var REC_ONLY = { energy: { name: 'エナジー中浦和', short: 'エナジー' } };
+  var REC_STORES = STORE_ORDER.concat(Object.keys(REC_ONLY));
   // 上の「全店共通」の欄と同じ値。これと違う店だけ、カードに表示する
   var STD = { weekday: '10:00〜23:00', weekend: '10:00〜21:00', firstDayNote: '17:00〜 close', lastDayNote: '18:30〜 open' };
   function sameNote(a, b) { return (a || '').replace(/\s+/g, '') === b.replace(/\s+/g, ''); }
@@ -390,7 +408,37 @@
   }
   function saveDbCache() { lsSet(LS_DB, JSON.stringify(DB)); }
   function todayIso() { return isoOf(new Date()); }
-  function storeName(id) { return (STORE_META[id] || {}).name || id; }
+  function storeName(id) { return (STORE_META[id] || REC_ONLY[id] || {}).name || id; }
+
+  // ---- エナジー中浦和の丸印（2026-11-24 追加） ----
+  // 丸の位置は記録の grade 欄に「marks:{JSON}」として入れる（保存先のプログラムを変えずに済むように）
+  // r＝写真の横÷縦、m＝[日付, 横の位置0〜1, 縦の位置0〜1] の並び
+  var MARK_STORE = 'energy', MARK_PFX = 'marks:';
+  var MARK_COLORS = ['#ff3b6b', '#2f80ed', '#22a85a', '#f28c28', '#9b51e0', '#00aebf', '#d4a400', '#8d5a44', '#222222', '#ff6fd0'];
+  function isMarkRec(p) { return p.store === MARK_STORE || (typeof p.grade === 'string' && p.grade.indexOf(MARK_PFX) === 0); }
+  function readMarks(p) {
+    try { var o = JSON.parse(String(p.grade || '').slice(MARK_PFX.length)); return { r: o.r || 1, m: o.m || [] }; }
+    catch (e) { return { r: 1, m: [] }; }
+  }
+  function writeMarks(r, m) { return MARK_PFX + JSON.stringify({ r: Math.round(r * 10000) / 10000, m: m }); }
+  function markDates(m, extra) {
+    var set = {}; m.forEach(function (k) { set[k[0]] = 1; }); if (extra) set[extra] = 1;
+    return Object.keys(set).sort();
+  }
+  function markColor(dates, d) { return MARK_COLORS[Math.max(0, dates.indexOf(d)) % MARK_COLORS.length]; }
+  function gradeLabel(p) { return isMarkRec(p) ? '丸' + readMarks(p).m.length + '個' : (p.grade || ''); }
+  // 正方形に切った小さい画像の上に丸を置く
+  function thumbDots(ph, p) {
+    var mk = readMarks(p), dates = markDates(mk.m), r = mk.r;
+    mk.m.forEach(function (k) {
+      var x = k[1], y = k[2];
+      if (r > 1) x = x * r - (r - 1) / 2; else if (r < 1) y = y / r - (1 / r - 1) / 2;
+      if (x < 0 || x > 1 || y < 0 || y > 1) return;
+      var d = document.createElement('span');
+      d.className = 'dot'; d.style.left = (x * 100) + '%'; d.style.top = (y * 100) + '%'; d.style.borderColor = markColor(dates, k[0]);
+      ph.appendChild(d);
+    });
+  }
 
   // その日がどのルートセット期間か（分かっているルートセット日のうち、その日以前で一番新しいもの）
   function periodOf(store, date) {
@@ -476,19 +524,20 @@
         var later = (starts[gr.store] || []).filter(function (s) { return s > gr.period; }).sort()[0];
         if (later) { var e = dateOnly(later); e.setDate(e.getDate() - 1); label += formatMD(gr.period) + '〜' + formatMD(isoOf(e)); }
         else label += formatMD(gr.period) + '〜';
-      } else label += '（期間不明）';
+      } else if (!REC_ONLY[gr.store]) label += '（期間不明）';
       var best = gr.items.reduce(function (m, p) { return gradeIdx(p.grade) > gradeIdx(m) ? p.grade : m; }, '');
+      var dotsN = gr.items.reduce(function (n, p) { return n + (isMarkRec(p) ? readMarks(p).m.length : 0); }, 0);
       var head = document.createElement('div');
       head.className = 'gh';
       head.appendChild(textEl('span', '', label));
-      head.appendChild(textEl('small', '', gr.items.length ? '写真' + gr.items.length + '枚' + (best ? '・全部登れた ' + best : '') : ''));
+      head.appendChild(textEl('small', '', gr.items.length ? '写真' + gr.items.length + '枚' + (best ? '・全部登れた ' + best : '') + (dotsN ? '・丸' + dotsN + '個' : '') : ''));
       box.appendChild(head);
       var vd = document.createElement('div');
       vd.className = 'gvisits';
       vd.appendChild(document.createTextNode('行った日 '));
       Object.keys(gr.dates).sort().forEach(function (d) {
         var c = textEl('span', 'vchip', formatMDW(d));
-        if (gr.manual[d] && !gr.items.some(function (p) { return p.date === d; })) {
+        if (gr.manual[d] && !gr.items.some(function (p) { return p.date === d || (isMarkRec(p) && readMarks(p).m.some(function (k) { return k[0] === d; })); })) {
           var del = textEl('button', '', '×');
           del.title = 'この行った日を消す';
           del.addEventListener('click', function () { removeVisit(gr.store, d); });
@@ -505,12 +554,13 @@
           var ph = document.createElement('button');
           ph.className = 'ph';
           var img = document.createElement('img');
-          img.alt = p.grade;
+          img.alt = gradeLabel(p);
           img.dataset.thumb = p.id;
           var t = thumbMem[p.id] || lsGet(LS_TH + p.id);
           if (t) { thumbMem[p.id] = t; img.src = t; } else need.push(p.id);
           ph.appendChild(img);
-          if (p.grade) ph.appendChild(textEl('span', 'tag', p.grade));
+          if (isMarkRec(p)) thumbDots(ph, p);
+          if (p.grade && !isMarkRec(p)) ph.appendChild(textEl('span', 'tag', p.grade)); // 丸の数は見出しに出す
           ph.addEventListener('click', function () { openEdit(p); });
           grid.appendChild(ph);
         });
@@ -562,7 +612,7 @@
   }
 
   // ---- 追加・編集の画面 ----
-  var sheet = { mode: '', store: '', grade: '', sent: null, image: null, thumb: null, item: null, confirmDel: false, rotated: false, rotBusy: false };
+  var sheet = { mode: '', store: '', grade: '', sent: null, image: null, thumb: null, item: null, confirmDel: false, rotated: false, rotBusy: false, marks: [], ratio: 1, origDate: '' };
   function $(id) { return document.getElementById(id); }
   function toast(msg, ms) {
     var t = $('toast'); t.textContent = msg; t.hidden = false;
@@ -572,8 +622,9 @@
     var old = document.querySelectorAll('#sheetBg .two.extra');
     for (var oi = 0; oi < old.length; oi++) old[oi].parentNode.removeChild(old[oi]);
     var sc = $('storeChips'); sc.innerHTML = '';
-    STORE_ORDER.forEach(function (id) {
-      var b = textEl('button', 'chip' + (sheet.store === id ? ' sel' : ''), storeName(id).replace(/店$/, ''));
+    REC_STORES.forEach(function (id) {
+      if (sheet.mode === 'edit' && (id === MARK_STORE) !== (sheet.store === MARK_STORE)) return; // 丸の記録とふつうの記録は入れ替えない
+      var b = textEl('button', 'chip' + (sheet.store === id ? ' sel' : ''), REC_ONLY[id] ? REC_ONLY[id].short : storeName(id).replace(/店$/, ''));
       b.addEventListener('click', function () { sheet.store = id; drawChips(); });
       sc.appendChild(b);
     });
@@ -583,12 +634,14 @@
       b.addEventListener('click', function () { sheet.grade = sheet.grade === gname ? '' : gname; drawChips(); }); // もう一度押すと外れる
       gc.appendChild(b);
     });
+    applyMarkMode();
     var bt = $('sheetBtns'); bt.innerHTML = '';
     if (sheet.mode === 'add') {
       var sv = textEl('button', 'b-save', '保存');
       sv.addEventListener('click', saveAdd);
       bt.appendChild(sv);
-      $('sheetHint').textContent = '課題を全部登れたいちばん上のグレードを1つ押します（選ばなくても保存できます）。';
+      $('sheetHint').textContent = markOn() ? '写真の、登れた課題のスタートホールドをタップして丸を付けます（もう一度タップで外す）。'
+        : '課題を全部登れたいちばん上のグレードを1つ押します（選ばなくても保存できます）。';
     } else if (sheet.mode === 'visit') {
       var b = textEl('button', 'b-sent', '行った日として保存');
       b.addEventListener('click', saveVisit);
@@ -600,7 +653,8 @@
       var ok = textEl('button', 'b-save', '直して保存');
       ok.addEventListener('click', saveEdit);
       bt.appendChild(del); bt.appendChild(ok);
-      $('sheetHint').textContent = sheet.confirmDel ? 'もう一度押すと、この記録と写真を消します（写真はドライブのゴミ箱に30日残ります）。' : '';
+      $('sheetHint').textContent = sheet.confirmDel ? 'もう一度押すと、この記録と写真を消します（写真はドライブのゴミ箱に30日残ります）。'
+        : markOn() ? '「丸の日付」の日に登れたスタートをタップして丸を足します。同じ日の丸はもう一度タップで外せます。' : '';
     }
   }
   function openSheet(mode, title) {
@@ -608,6 +662,7 @@
     $('toast').hidden = true;
     $('sheetTitle').textContent = title;
     $('gradeArea').hidden = mode === 'visit';
+    if (mode !== 'edit' || !markOn()) sheet.origDate = '';
     $('rotBar').hidden = mode === 'visit';
     sheet.rotated = false; sheet.rotBusy = false; setRotBtns();
     drawChips();
@@ -627,6 +682,58 @@
     c.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
     return c.toDataURL('image/jpeg', q);
   }
+  function markOn() { return sheet.store === MARK_STORE && sheet.mode !== 'visit'; }
+  function curMarkDate() { return $('sheetDate').value || todayIso(); }
+  function applyMarkMode() {
+    var on = markOn();
+    $('gradeArea').hidden = sheet.mode === 'visit' || on;
+    $('pvWrap').classList.toggle('mark', on);
+    $('dateLabel').textContent = on && sheet.mode === 'edit' ? '丸の日付' : '日付';
+    drawDots();
+  }
+  function drawDots() {
+    var box = $('dots'), lg = $('legend'), on = markOn();
+    box.innerHTML = ''; lg.innerHTML = '';
+    lg.hidden = !on;
+    if (!on) return;
+    var cur = curMarkDate(), dates = markDates(sheet.marks, cur);
+    sheet.marks.forEach(function (k) {
+      var d = document.createElement('span');
+      d.className = 'dot' + (k[0] === cur ? '' : ' old');
+      d.style.left = (k[1] * 100) + '%'; d.style.top = (k[2] * 100) + '%'; d.style.borderColor = markColor(dates, k[0]);
+      box.appendChild(d);
+    });
+    dates.forEach(function (d) {
+      var n = sheet.marks.filter(function (k) { return k[0] === d; }).length;
+      var it = document.createElement('span');
+      if (d === cur) it.className = 'cur';
+      var i = document.createElement('i'); i.style.borderColor = markColor(dates, d);
+      it.appendChild(i); it.appendChild(document.createTextNode(formatMDW(d) + ' ' + n + '個'));
+      lg.appendChild(it);
+    });
+  }
+  $('pvWrap').addEventListener('click', function (e) {
+    if (!markOn() || $('sheetImg').hidden || !$('sheetImg').src) return;
+    var rc = $('sheetImg').getBoundingClientRect();
+    if (!rc.width || !rc.height) return;
+    var x = (e.clientX - rc.left) / rc.width, y = (e.clientY - rc.top) / rc.height;
+    if (x < 0 || x > 1 || y < 0 || y > 1) return;
+    var cur = curMarkDate(), hit = -1, best = 20 * 20; // 指で押した所から20px以内の、同じ日の丸は外す
+    sheet.marks.forEach(function (k, i) {
+      if (k[0] !== cur) return;
+      var dx = (k[1] - x) * rc.width, dy = (k[2] - y) * rc.height, d2 = dx * dx + dy * dy;
+      if (d2 < best) { best = d2; hit = i; }
+    });
+    if (hit >= 0) sheet.marks.splice(hit, 1);
+    else sheet.marks.push([cur, Math.round(x * 10000) / 10000, Math.round(y * 10000) / 10000]);
+    drawDots();
+  });
+  $('sheetDate').addEventListener('change', drawDots);
+  $('sheetImg').addEventListener('load', function () {
+    var im = $('sheetImg');
+    if (sheet.mode === 'add' && im.naturalWidth) sheet.ratio = im.naturalWidth / im.naturalHeight;
+  });
+
   // ---- 写真を左右に90度回す（2026-11-24 追加） ----
   function setRotBtns() {
     var off = sheet.rotBusy || (sheet.mode === 'edit' && !sheet.image);
@@ -656,6 +763,10 @@
     rotateUrl(sheet.image, dir).then(function (r) {
       if (sheet.item !== item || $('sheetBg').hidden) return;
       sheet.image = r.image; sheet.thumb = r.thumb; sheet.rotated = true;
+      // 丸も写真と一緒に回す（右回り：(x,y)→(1-y,x)、左回り：(x,y)→(y,1-x)）
+      sheet.marks = sheet.marks.map(function (k) { return dir > 0 ? [k[0], 1 - k[2], k[1]] : [k[0], k[2], 1 - k[1]]; });
+      sheet.ratio = 1 / sheet.ratio;
+      drawDots();
       $('sheetImg').src = r.image;
       if (sheet.mode === 'edit') $('sheetHint').textContent = '「直して保存」を押すと、回した向きで保存します。';
     }).catch(function () { toast('回せませんでした'); })
@@ -674,6 +785,7 @@
       sheet.thumb = shrink(img, THUMB_PX, true, 0.7);
       URL.revokeObjectURL(url);
       sheet.store = lsGet(LS_LAST) || 'omiya'; sheet.grade = ''; sheet.item = null;
+      sheet.marks = []; sheet.ratio = (img.naturalWidth || 1) / (img.naturalHeight || 1);
       $('sheetDate').value = todayIso();
       $('sheetImg').hidden = false; $('sheetImg').classList.remove('loading'); $('sheetImg').src = sheet.image;
       openSheet('add', 'スコアシートを追加');
@@ -690,6 +802,8 @@
   function openEdit(p) {
     sheet.item = p; sheet.store = p.store; sheet.grade = p.grade; sheet.sent = p.sent;
     sheet.image = fullMem[p.id] || null; sheet.thumb = null;
+    if (isMarkRec(p)) { var mk = readMarks(p); sheet.store = MARK_STORE; sheet.marks = mk.m.slice(); sheet.ratio = mk.r; sheet.grade = ''; }
+    else { sheet.marks = []; sheet.ratio = 1; }
     $('sheetDate').value = p.date;
     var im = $('sheetImg');
     im.hidden = false;
@@ -702,6 +816,7 @@
       }).catch(function () { im.classList.remove('loading'); });
     }
     openSheet('edit', formatMDW(p.date) + ' ' + storeName(p.store));
+    if (markOn()) { sheet.origDate = p.date; $('sheetDate').value = todayIso(); drawDots(); }
   }
   // 回した写真は、新しい写真として保存してから古いほうを消す（日付・店・グレードはそのまま）
   function saveRotated(p, upd) {
@@ -720,7 +835,9 @@
 
   function saveAdd() {
     var date = $('sheetDate').value || todayIso();
-    var rec = { date: date, store: sheet.store, grade: sheet.grade, sent: true, period: periodOf(sheet.store, date) };
+    var isM = markOn();
+    var marks = sheet.marks.map(function (k) { return [date, k[1], k[2]]; }); // 足すときの丸は、全部この日のもの
+    var rec = { date: date, store: sheet.store, grade: isM ? writeMarks(sheet.ratio, marks) : sheet.grade, sent: true, period: isM ? '' : periodOf(sheet.store, date) };
     var thumb = sheet.thumb;
     lsSet(LS_LAST, sheet.store);
     closeSheet();
@@ -728,7 +845,7 @@
     api(null, Object.assign({ a: 'add', image: sheet.image, thumb: thumb }, rec)).then(function (j) {
       rec.id = j.id; thumbMem[j.id] = thumb; lsSet(LS_TH + j.id, thumb);
       DB.problems.push(rec); saveDbCache(); renderMine(); renderRec();
-      toast('保存しました' + (rec.grade ? '（' + rec.grade + '）' : ''));
+      toast('保存しました' + (gradeLabel(rec) ? '（' + gradeLabel(rec) + '）' : ''));
     }).catch(function () { toast('保存できませんでした。もう一度追加してください', 4000); });
   }
   function saveVisit() {
@@ -748,6 +865,17 @@
   function saveEdit() {
     var p = sheet.item, date = $('sheetDate').value || p.date;
     var upd = { date: date, store: sheet.store, grade: sheet.grade, sent: sheet.sent, period: periodOf(sheet.store, date) };
+    if (markOn()) {
+      // 丸の記録：記録の日付は最初の日のまま。丸を足した日は「行った日」にも入れる
+      var md = date;
+      date = sheet.origDate || p.date;
+      upd = { date: date, store: MARK_STORE, grade: writeMarks(sheet.ratio, sheet.marks), sent: sheet.sent, period: '' };
+      if (md !== date && sheet.marks.some(function (k) { return k[0] === md; }) &&
+          !DB.visits.some(function (v) { return v.date === md && v.store === MARK_STORE; })) {
+        DB.visits.push({ date: md, store: MARK_STORE });
+        api(null, { a: 'visit', date: md, store: MARK_STORE }).catch(function () {});
+      }
+    }
     if (sheet.rotated) return saveRotated(p, upd);
     closeSheet();
     toast('保存中…', 0);
