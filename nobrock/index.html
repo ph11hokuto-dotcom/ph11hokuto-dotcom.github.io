@@ -3,125 +3,148 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ノブロック紹介帳</title>
+<title>ヘロヘロ団の店帳</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="ノブロック帳">
-<meta name="theme-color" content="#43bde8">
-<link rel="apple-touch-icon" href="icon-v1-180.png">
-<link rel="icon" href="icon-v1-180.png">
+<meta name="apple-mobile-web-app-title" content="ヘロヘロ帳">
+<meta name="theme-color" content="#fff8e7">
+<link rel="apple-touch-icon" href="icon-bs-v1-180.png">
+<link rel="icon" href="icon-bs-v1-180.png">
 <style>
-:root{--bg:#fffbe6;--card:#fff;--ink:#2a1d1a;--sub:#7a6a60;--line:#eadfc8;--blue:#43bde8;--blue-l:#e3f5fc;--yel:#f6e23e;--yel-l:#fff6c2;--pink:#ff7a8c;--pink-l:#ffe6ea;--grn:#38ad94;--grn-l:#e0f5ef;--pur:#b487d6;--pur-l:#f2e9fa}
+:root{--bg:#fff8e7;--card:#fff;--ink:#1e1c1b;--sub:#77695e;--line:#ecdcc0;--yel:#ffc93c;--yel-l:#fff2c8;--pink:#ff8f9c;--pink-l:#ffe8eb;--grn:#46b58e;--grn-l:#e2f6ee;--blu:#5aaee0;--blu-l:#e4f2fb;--pur:#a98bd8;--pur-l:#f0eafa}
 *{box-sizing:border-box}
 body{margin:0;overflow-x:hidden;background:var(--bg);color:var(--ink);font-family:"Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic",sans-serif;-webkit-text-size-adjust:100%}
-header{position:sticky;top:0;z-index:5;background:var(--blue);padding:calc(env(safe-area-inset-top) + 14px) 16px 10px;border-bottom:4px solid var(--ink)}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(env(safe-area-inset-top) + 16px) 16px 8px;border-bottom:3px solid var(--ink)}
 .top{display:flex;align-items:center;gap:10px}
-.top img{width:42px;height:42px;border-radius:11px;border:3px solid var(--ink);background:#fff}
-h1{margin:0;font-size:20px;color:#fff;letter-spacing:.04em;text-shadow:2px 2px 0 var(--ink),-1px -1px 0 var(--ink),1px -1px 0 var(--ink),-1px 1px 0 var(--ink)}
-.ver{margin-left:auto;font-size:11px;color:#fff;opacity:.9}
+.top img{width:44px;height:44px;border-radius:11px}
+h1{margin:0;font-size:19px;letter-spacing:.06em;line-height:1.2}
+h1 small{display:block;font-size:11px;color:var(--sub);letter-spacing:0;font-weight:400}
+.ver{margin-left:auto;font-size:11px;color:var(--sub)}
 .tabs{display:flex;gap:6px;margin-top:10px;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
-.tab{flex:0 0 auto;border:3px solid var(--ink);background:#fff;border-radius:999px;padding:5px 12px;font-size:14px;font-weight:700;color:var(--ink)}
+.tab{flex:0 0 auto;border:2.5px solid var(--ink);background:#fff;border-radius:999px;padding:5px 12px;font-size:14px;font-weight:700;color:var(--ink);font-family:inherit}
 .tab.on{background:var(--yel)}
 .tab b{font-size:11px;font-weight:400;margin-left:3px;color:var(--sub)}
 .bar{padding:10px 16px 4px;display:flex;flex-direction:column;gap:8px}
-input[type=search]{width:100%;font-size:16px;padding:9px 12px;border:3px solid var(--ink);border-radius:12px;background:#fff;color:var(--ink)}
+input[type=search]{width:100%;font-size:16px;padding:9px 12px;border:2.5px solid var(--ink);border-radius:12px;background:#fff;color:var(--ink);font-family:inherit}
 .chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
 .chips::-webkit-scrollbar{display:none}
-.chip{flex:0 0 auto;border:2px solid var(--line);background:#fff;border-radius:999px;padding:4px 10px;font-size:13px;color:var(--ink)}
-.chip.on{border-color:var(--ink);background:var(--blue-l)}
+.chip{flex:0 0 auto;border:2px solid var(--line);background:#fff;border-radius:999px;padding:4px 10px;font-size:13px;color:var(--ink);font-family:inherit}
+.chip.on{border-color:var(--ink);background:var(--yel-l)}
 .count{font-size:12px;color:var(--sub)}
-main{padding:4px 16px 40px;display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr))}
-.card{min-width:0;overflow-wrap:anywhere;background:var(--card);border:3px solid var(--ink);border-radius:16px;padding:12px 14px;position:relative}
-.card.c店{box-shadow:5px 5px 0 var(--yel)}
-.card.cレシピ{box-shadow:5px 5px 0 var(--pink)}
-.card.c商品{box-shadow:5px 5px 0 var(--grn)}
-.card.c作品{box-shadow:5px 5px 0 var(--pur)}
+main{padding:4px 16px 40px;display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr))}
+.card{min-width:0;overflow-wrap:anywhere;background:var(--card);border:2.5px solid var(--ink);border-radius:16px;padding:12px 14px;position:relative}
+.card.c店{box-shadow:4px 4px 0 var(--yel)}
+.card.c商品{box-shadow:4px 4px 0 var(--grn)}
+.card.cおみや{box-shadow:4px 4px 0 var(--pink)}
+.card.c回{box-shadow:4px 4px 0 var(--blu)}
 .card.done{opacity:.6}
 .tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:999px;margin:0 4px 4px 0;border:1.5px solid var(--ink)}
-.t店{background:var(--yel-l)}.tレシピ{background:var(--pink-l)}.t商品{background:var(--grn-l)}.t作品{background:var(--pur-l)}
-.tg{background:#fff}
+.t店{background:var(--yel-l)}.t商品{background:var(--grn-l)}.tおみや{background:var(--pink-l)}.t回{background:var(--blu-l)}
 .st{background:#fff;color:var(--sub);border-color:var(--line)}
-.st.end{background:#eee}
-.name{font-size:17px;font-weight:800;margin:2px 0 4px;line-height:1.35;padding-right:36px}
-.item{font-size:14px;line-height:1.5;margin:0 0 6px}
+.name{font-size:17px;font-weight:800;margin:2px 0 4px;line-height:1.4;padding-right:36px}
+.c回 .name{font-size:15px}
 .meta{font-size:12px;color:var(--sub);line-height:1.6}
-.hours{font-size:12px;background:var(--blue-l);border-radius:8px;padding:6px 8px;margin-top:6px;line-height:1.55}
-.note{font-size:12px;margin-top:4px;color:var(--sub)}
+details{margin-top:8px}
+summary{font-size:13px;cursor:pointer;color:var(--ink);font-weight:700}
+ul.toc{list-style:none;padding:0;margin:6px 0 0;font-size:13px;line-height:1.5}
+ul.toc li{padding:3px 0;border-bottom:1px dashed var(--line)}
+ul.toc a{color:var(--ink);text-decoration:none}
+ul.toc a span{display:inline-block;min-width:3.6em;color:#c0392b;font-variant-numeric:tabular-nums}
 .btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .btns a,.btns button{font-size:13px;text-decoration:none;color:var(--ink);background:#fff;border:2px solid var(--ink);border-radius:10px;padding:5px 10px;font-family:inherit}
 .btns a.play{background:var(--pink-l)}
 .btns button.on{background:var(--yel)}
-.star{position:absolute;top:8px;right:10px;border:none;background:none;font-size:24px;line-height:1;color:#d8ccb6;padding:4px}
-.star.on{color:#ffb400}
+.star{position:absolute;top:8px;right:10px;border:none;background:none;font-size:24px;line-height:1;color:#dccfb8;padding:4px}
+.star.on{color:#f5a400}
 .empty{grid-column:1/-1;text-align:center;color:var(--sub);padding:40px 0}
+.more{grid-column:1/-1;text-align:center}
+.more button{font-size:14px;border:2.5px solid var(--ink);background:#fff;border-radius:12px;padding:8px 18px;font-family:inherit;color:var(--ink)}
 footer{padding:0 16px 30px;font-size:11px;color:var(--sub);line-height:1.6}
 </style>
 </head>
 <body>
 <header>
-  <div class="top"><img src="icon-v1-180.png" alt=""><h1>ノブロック紹介帳</h1><span class="ver">v2</span></div>
+  <div class="top"><img src="icon-bs-v1-180.png" alt=""><h1>ヘロヘロ団の店帳<small>BSノブロック〜新橋ヘロヘロ団〜で紹介された店と商品</small></h1><span class="ver">v3</span></div>
   <div class="tabs" id="tabs"></div>
 </header>
 <div class="bar">
-  <input type="search" id="q" placeholder="店・料理・作品・出演者で検索">
+  <input type="search" id="q" placeholder="店・料理・商品・回の名前で検索">
   <div class="chips" id="chips"></div>
   <div class="count" id="count"></div>
 </div>
 <main id="list"></main>
 <footer>
-  YouTube「佐久間宣行のNOBROCK TV」の概要欄・字幕から、紹介された店・商品・作品をまとめた個人用メモです（2026年11月24日(火)時点、動画515本）。営業時間はネットの掲載情報なので、行く前に店へ確認してください。
+  YouTube「BSノブロック〜新橋ヘロヘロ団〜」（佐久間宣行のNOBROCK TVのサブチャンネル）の全131回の概要欄から、自動でまとめた個人用メモです（2026年11月24日(火)時点）。店の営業時間は確認していないので、行く前に地図や店のページで確かめてください。拾いきれなかったものは「回」のタブの目次から探せます。
 </footer>
-<script src="data-v2.js"></script>
+<script src="data-bs-v1.js"></script>
 <script>
-const CATS=[["すべて",""],["店","店"],["レシピ","レシピ"],["商品","商品"],["作品","作品"],["☆気になる","star"]];
-const KEY="nobrock-list-v1";
+const TABS=[["店","店"],["商品","商品"],["おみや","おみや"],["回","回"],["★気になる","star"]];
+const KEY="herohero-list-v1";
 let mark={};try{mark=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(mark))}catch(e){}}
-let cat="店",chip="",q="";
+const EPI=EPS.map((e,i)=>({...e,cat:"回",id:"e"+e.vid,name:e.vt}));
+const ALL=[...DATA,...EPI];
+let tab="店",chip="",q="",limit=60;
 const $=id=>document.getElementById(id);
-const esc=s=>String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-function inCat(x){return cat==="star"?mark[x.id]?.s:(!cat||x.cat===cat)}
-function chipKey(x){return x.cat==="店"?(x.area.split("（")[0]):x.cat==="作品"?x.date.slice(0,4)+"年":x.genre}
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const yt=(v,t)=>`https://www.youtube.com/watch?v=${v}${t?`&t=${t}s`:""}`;
+const mmss=t=>`${Math.floor(t/60)}:${String(t%60).padStart(2,"0")}`;
+function inTab(x){return tab==="star"?mark[x.id]?.s:x.cat===tab}
+function chipKey(x){
+  if(x.cat==="店")return x.area?x.area.replace(/^(東京都)/,""):"住所なし";
+  return x.date.slice(0,4)+"年";
+}
 function renderTabs(){
-  $("tabs").innerHTML=CATS.map(([l,v])=>{const n=DATA.filter(x=>v==="star"?mark[x.id]?.s:(!v||x.cat===v)).length;
-    return `<button class="tab ${cat===v?"on":""}" data-v="${v}">${l}<b>${n}</b></button>`}).join("");
+  $("tabs").innerHTML=TABS.map(([l,v])=>{const n=ALL.filter(x=>v==="star"?mark[x.id]?.s:x.cat===v).length;
+    return `<button class="tab ${tab===v?"on":""}" data-v="${v}">${l}<b>${n}</b></button>`}).join("");
 }
 function renderChips(){
-  const keys=[...new Set(DATA.filter(inCat).map(chipKey))].filter(Boolean).sort();
-  $("chips").innerHTML=(keys.length>1?[`<button class="chip ${!chip?"on":""}" data-k="">ぜんぶ</button>`,...keys.map(k=>`<button class="chip ${chip===k?"on":""}" data-k="${esc(k)}">${esc(k)}</button>`)]:[]).join("");
+  const cnt={};ALL.filter(inTab).forEach(x=>{const k=chipKey(x);cnt[k]=(cnt[k]||0)+1});
+  const keys=Object.keys(cnt).sort((a,b)=>tab==="店"?cnt[b]-cnt[a]:b.localeCompare(a));
+  $("chips").innerHTML=keys.length>1?[`<button class="chip ${!chip?"on":""}" data-k="">ぜんぶ</button>`,...keys.map(k=>`<button class="chip ${chip===k?"on":""}" data-k="${esc(k)}">${esc(k)} ${cnt[k]}</button>`)].join(""):"";
+}
+function toc(list){
+  return `<ul class="toc">${list.map(d=>`<li><a href="${yt(d.vid,d.t)}" target="_blank" rel="noopener"><span>${d.t?mmss(d.t):""}</span>${esc(d.n)}</a></li>`).join("")}</ul>`;
 }
 function card(x){
   const m=mark[x.id]||{};
-  const url=x.vid?`https://www.youtube.com/watch?v=${x.vid}${x.t?`&t=${x.t}s`:""}`:"";
-  const tm=x.t?`（${Math.floor(x.t/60)}分${String(x.t%60).padStart(2,"0")}秒〜）`:"";
-  const map=x.cat==="店"&&!/期間限定/.test(x.area)?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.name+" "+x.area.replace(/（|）/g," "))}`:"";
-  const doneL=x.cat==="作品"?"見た":x.cat==="商品"?"買った":x.cat==="レシピ"?"作った":"行った";
-  return `<div class="card c${x.cat} ${m.d?"done":""}">
-<button class="star ${m.s?"on":""}" data-star="${x.id}" aria-label="気になる">★</button>
-<span class="tag t${x.cat}">${x.cat}</span><span class="tag tg">${esc(x.genre)}</span>${x.st?`<span class="tag st ${x.st==="終了"?"end":""}">${esc(x.st)}</span>`:""}
+  const star=`<button class="star ${m.s?"on":""}" data-star="${x.id}" aria-label="気になる">★</button>`;
+  if(x.cat==="回"){
+    const items=DATA.filter(d=>d.vid===x.vid);
+    return `<div class="card c回">${star}<span class="tag t回">回</span><span class="tag st">${esc(x.date)}</span>${x.dur?`<span class="tag st">${Math.round(x.dur/60)}分</span>`:""}
+<div class="name">${esc(x.vt)}</div>
+${items.length?`<div class="meta">${items.map(d=>`${d.cat}: ${esc(d.name)}`).slice(0,6).join("　")}${items.length>6?` ほか${items.length-6}件`:""}</div>`:""}
+${x.toc.length?`<details><summary>目次（${x.toc.length}）</summary>${toc(x.toc.map(t=>({vid:x.vid,t:t.t,n:t.s})))}</details>`:""}
+<div class="btns"><a class="play" href="${yt(x.vid)}" target="_blank" rel="noopener">▶ 動画</a><button class="${m.d?"on":""}" data-done="${x.id}">${m.d?"✓ ":""}見た</button></div></div>`;
+  }
+  const doneL=x.cat==="店"?"行った":"食べた";
+  const map=x.cat==="店"?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.name+" "+(x.addr||x.area))}`:"";
+  const shop=x.cat!=="店"&&x.vt?"":"";
+  return `<div class="card c${x.cat} ${m.d?"done":""}">${star}
+<span class="tag t${x.cat}">${x.cat}</span>${x.note?`<span class="tag st">${esc(x.note.replace(/^(今回|ご|本日の)/,""))}</span>`:""}
 <div class="name">${esc(x.name)}</div>
-<p class="item">${esc(x.item)}</p>
-<div class="meta">${x.area?`場所: ${esc(x.area)}<br>`:""}${x.by?`紹介: ${esc(x.by)}<br>`:""}${x.vid?`${esc(x.date)}「${esc(x.vt)}」`:""}</div>
-${x.hours?`<div class="hours">${esc(x.hours)}</div>`:""}${x.note?`<div class="note">${esc(x.note)}</div>`:""}
-<div class="btns">${url?`<a class="play" href="${url}" target="_blank" rel="noopener">▶ 動画${tm}</a>`:""}${map?`<a href="${map}" target="_blank" rel="noopener">地図</a>`:""}${x.link?`<a href="${esc(x.link)}" target="_blank" rel="noopener">公式・注文</a>`:""}<button class="${m.d?"on":""}" data-done="${x.id}">${m.d?"✓ ":""}${doneL}</button></div>
-</div>`;
+<div class="meta">${x.addr?`住所: ${esc(x.addr)}<br>`:x.area?`場所: ${esc(x.area)}<br>`:""}${esc(x.date)}「${esc(x.vt)}」</div>
+${x.dishes&&x.dishes.length?`<details><summary>食べたもの（${x.dishes.length}）</summary>${toc(x.dishes.map(d=>({vid:x.vid,t:d.t,n:d.n})))}</details>`:""}
+<div class="btns"><a class="play" href="${yt(x.vid,x.t)}" target="_blank" rel="noopener">▶ 動画${x.t?`（${mmss(x.t)}〜）`:""}</a>${map?`<a href="${map}" target="_blank" rel="noopener">地図</a>`:""}${x.link?`<a href="${esc(x.link)}" target="_blank" rel="noopener">${x.cat==="店"?"店のページ":"商品のページ"}</a>`:""}<button class="${m.d?"on":""}" data-done="${x.id}">${m.d?"✓ ":""}${doneL}</button></div></div>`;
 }
 function render(){
   renderTabs();renderChips();
   const w=q.trim().toLowerCase();
-  const list=DATA.filter(x=>inCat(x)&&(!chip||chipKey(x)===chip)&&(!w||[x.name,x.item,x.genre,x.area,x.by,x.vt,x.note].join(" ").toLowerCase().includes(w)));
-  if(cat==="作品")list.sort((a,b)=>b.date.localeCompare(a.date)||a.t-b.t);
+  const hay=x=>[x.name,x.addr,x.area,x.vt,x.note,...(x.dishes||[]).map(d=>d.n),...(x.toc||[]).map(t=>t.s)].join(" ").toLowerCase();
+  const list=ALL.filter(x=>inTab(x)&&(!chip||chipKey(x)===chip)&&(!w||hay(x).includes(w)));
+  list.sort((a,b)=>b.date.localeCompare(a.date)||(a.t||0)-(b.t||0));
   $("count").textContent=`${list.length}件`;
-  $("list").innerHTML=list.length?list.map(card).join(""):`<div class="empty">${cat==="star"?"★を押すとここに集まります":"見つかりませんでした"}</div>`;
+  $("list").innerHTML=list.length?list.slice(0,limit).map(card).join("")+(list.length>limit?`<div class="more"><button data-more="1">もっと見る（残り${list.length-limit}件）</button></div>`:""):`<div class="empty">${tab==="star"?"★を押すとここに集まります":"見つかりませんでした"}</div>`;
 }
 document.addEventListener("click",e=>{
   const t=e.target.closest("button");if(!t)return;
-  if(t.dataset.v!==undefined){cat=t.dataset.v;chip="";render();window.scrollTo(0,0)}
-  else if(t.dataset.k!==undefined){chip=t.dataset.k;render()}
+  if(t.dataset.v!==undefined){tab=t.dataset.v;chip="";limit=60;render();window.scrollTo(0,0)}
+  else if(t.dataset.k!==undefined){chip=t.dataset.k;limit=60;render()}
+  else if(t.dataset.more){limit+=60;render()}
   else if(t.dataset.star){const id=t.dataset.star;mark[id]={...mark[id],s:!mark[id]?.s};save();render()}
   else if(t.dataset.done){const id=t.dataset.done;mark[id]={...mark[id],d:!mark[id]?.d};save();render()}
 });
-$("q").addEventListener("input",e=>{q=e.target.value;render()});
+$("q").addEventListener("input",e=>{q=e.target.value;limit=60;render()});
 render();
 </script>
 </body>
