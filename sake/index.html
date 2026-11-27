@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="日本酒6分類">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#1d3f8f">
+<link rel="apple-touch-icon" href="icon-sake-v1-180.png">
+<link rel="icon" href="icon-sake-v1-180.png">
+<title>日本酒の6分類と名酒</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday（趣味の調べ物、読んで選ぶ）
+   IDEA 酒屋の棚札と、精米歩合で並べた分類の早見表
+   PICTURE 2列×3段の早見表。米粒の大きさで「どれだけ削ったか」を描く
+   COLOUR 白地、藍 #1d3f8f が主、朱 #c8361f を印に、淡い藍の面
+   TYPE Shippori Mincho（見出し）+ Noto Sans JP（本文）
+   LAYOUT 上に題と早見表を横いっぱい、下に分類ごとの10本の札を並べる。スマホは1列 */
+:root{color-scheme:light;--bg:#ffffff;--ink:#17202e;--sub:#4a5568;--ai:#1d3f8f;--ai2:#e8eef9;--ai3:#c9d6ef;--shu:#c8361f;--line:#d9dee7}
+*{box-sizing:border-box;min-width:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.65 "Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif;margin:0;overflow-x:clip}
+.band{padding-block:clamp(24px,4vw,56px);padding-left:max(5vw,16px,env(safe-area-inset-left,0px));padding-right:max(5vw,16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto}
+.top{background:var(--ai);color:#fff;margin-top:calc(-1*env(safe-area-inset-top,0px));padding-top:calc(env(safe-area-inset-top,0px) + 2.4rem)}
+h1{font:800 clamp(32px,5vw,50px)/1.1 "Shippori Mincho",serif;letter-spacing:-.01em;margin:0 0 12px}
+.lead{margin:0;max-width:62em;color:#e6ecf8}
+.lead b{color:#fff}
+.note{margin:10px 0 0;font-size:14px;color:#cfd9ef}
+.map{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:26px}
+.hd{font-weight:700;font-size:15px;padding:6px 10px;color:#fff;align-self:end}
+.rowh{font-size:14px;color:#dbe3f3;align-self:center;padding-right:6px;white-space:nowrap}
+.rowh b{display:block;font-size:16px;color:#fff}
+.cell{display:flex;gap:14px;align-items:center;background:#fff;color:var(--ink);border-radius:10px;padding:14px;text-decoration:none;min-height:96px;transition:transform .15s}
+.cell:hover{transform:translateY(-2px)}
+.cell:focus-visible{outline:3px solid var(--shu);outline-offset:2px}
+.grain{flex:none;width:64px;height:64px;display:grid;place-items:center}
+.grain i{display:block;border-radius:50% 50% 46% 46%/58% 58% 42% 42%;background:radial-gradient(circle at 38% 34%,#fff 0 30%,#eef1f6 60%,#cfd6e2 100%);border:1.5px solid #9aa6bb}
+.grain i.free{border-style:dashed;background:#f6f8fb}
+.cell h3{margin:0;font:800 20px/1.25 "Shippori Mincho",serif;color:var(--ai)}
+.cell p{margin:2px 0 0;font-size:13.5px;color:var(--sub);line-height:1.5}
+.legend{margin-top:12px;font-size:14px;color:#dbe3f3}
+nav.chips{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:#fff;border-bottom:1px solid var(--line);padding-block:10px}
+nav.chips .wrap{display:flex;flex-wrap:wrap;gap:8px}
+nav.chips a{font-size:14px;font-weight:700;color:var(--ai);background:var(--ai2);border-radius:999px;padding:8px 14px;text-decoration:none;white-space:nowrap}
+nav.chips a:hover{background:var(--ai3)}
+body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:#fff;z-index:6}
+section{scroll-margin-top:70px}
+.sec-h{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 24px;align-items:end;border-top:3px solid var(--ai);padding-top:14px;margin-bottom:18px}
+.sec-h h2{margin:0;font:800 clamp(26px,3.4vw,36px)/1.15 "Shippori Mincho",serif;color:var(--ai)}
+.sec-h .def{grid-column:1/-1;margin:0;color:var(--sub);font-size:15px}
+.sec-h .tag{font-size:14px;font-weight:700;color:var(--shu);border:1.5px solid var(--shu);border-radius:6px;padding:3px 10px;white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,265px),1fr));gap:12px}
+.card{position:relative;border:1px solid var(--line);border-radius:10px;padding:14px 16px 12px 52px;background:#fff}
+.card .n{position:absolute;left:14px;top:14px;width:28px;height:28px;border-radius:50%;background:var(--ai2);color:var(--ai);font-weight:700;font-size:14px;display:grid;place-items:center}
+.card h4{margin:0;font:700 18px/1.35 "Shippori Mincho",serif;word-break:keep-all;overflow-wrap:anywhere}
+.card .kura{margin:3px 0 0;font-size:14px;color:var(--sub)}
+.card .yomi{margin:0 0 1px;font-size:13px;color:var(--sub);letter-spacing:.02em}
+.card .pr{display:flex;flex-wrap:wrap;gap:6px;margin:7px 0 0}
+.card .price{font-size:14px;font-weight:700;color:var(--shu);border:1.5px solid var(--shu);border-radius:4px;padding:0 8px;white-space:nowrap}
+.card .rank{margin:6px 0 0;font-size:13px;color:var(--ai);font-weight:700}
+.card .rank b{margin-left:6px;font-size:15px}
+.card .spec{display:inline-block;font-size:13px;background:var(--ai2);color:var(--ai);border-radius:4px;padding:1px 8px}
+.card .txt{margin:6px 0 0;font-size:14.5px;line-height:1.6}
+.card .src{margin:6px 0 0;font-size:13px;color:#6b7686}
+.card.gen{border-style:dashed;background:#fbfcfe}
+.foot{background:var(--ai2)}
+.foot h2{margin:0 0 10px;font:800 24px/1.2 "Shippori Mincho",serif;color:var(--ai)}
+.foot ul{margin:0;padding-left:1.2em;columns:2 320px;column-gap:32px;font-size:14px}
+.foot li{break-inside:avoid;margin-bottom:6px}
+.foot a{color:var(--ai);overflow-wrap:anywhere}
+.foot p{font-size:14px;color:var(--sub);margin:14px 0 0}
+@media(max-width:600px){.map{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.rowh{grid-column:1/-1;padding-top:6px}.hd:first-child{display:none}.cell{flex-direction:column;align-items:flex-start;gap:6px;padding:12px}.grain{width:48px;height:48px}.cell h3{font-size:18px}}
+@media(prefers-reduced-motion:reduce){.cell{transition:none}}
+.ver{position:absolute;right:max(16px,env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 10px);font-size:12px;color:#cfd9ef}
+.top{position:relative}
+:root{padding:0}
+</style>
+</head>
+<body>
+
+<header class="band top">
+  <span class="ver">v1</span>
+  <div class="wrap">
+    <h1>日本酒の6分類と、日本酒好きに評価の高い10本ずつ</h1>
+    <p class="lead">分ける軸は2つだけです。<b>醸造アルコールを入れるか</b>（左右）と、<b>お米をどこまで削るか</b>（上下）。下の表を押すと、その分類の10本へ飛びます。10本は、口コミサイト<b>SAKETIMEの銘柄ランキング</b>の上位から選びました。</p>
+    <p class="note">「醸造酒」は音声入力の聞き違いと考え、6分類（純米大吟醸・純米吟醸・純米酒・大吟醸・吟醸・本醸造）で作りました。特別純米は純米酒に、特別本醸造は本醸造に入れています。</p>
+    <div class="map" id="map"></div>
+    <p class="legend">米粒の大きさ＝削ったあとに残る量（精米歩合）。点線は「決まりなし」。</p>
+    <p class="note">朱色の枠の値段は、720mlを酒屋・通販で買うときのだいたいの値段（税込、2026年11月時点の目安）です。「実勢」は定価で手に入りにくく、通販でついている値段です。</p>
+  </div>
+</header>
+
+<nav class="chips band" aria-label="分類へ移動"><div class="wrap" id="chips"></div></nav>
+
+<main id="secs"></main>
+
+<footer class="band foot">
+  <div class="wrap">
+    <h2>参考にした記事・動画</h2>
+    <ul id="srcs"></ul>
+    <p>選び方: SAKETIMEの銘柄ランキング（2026年11月27日(金)更新、1〜100位）を上から見て、その分類の代表的な商品がある銘柄を順に選びました。順位とスコアは銘柄全体のもので、商品ごとのものではありません。アルコール添加の3分類（大吟醸・吟醸・本醸造）は上位の銘柄が少ないため、100位圏外の定番で補い、点線の札にしています。値段は720mlの税込の目安です。調べた日: 2026年11月27日(金)。</p>
+  </div>
+</footer>
+
+<script>
+{
+const S={
+ stk:["SAKETIME 日本酒ランキング（2026年11月27日(金)更新）","https://www.saketime.jp/ranking/"],
+ gk:["SAKETIME 楽器正宗","https://www.saketime.jp/brands/2281"],
+ rkg:["ランク王 楽器正宗のおすすめ","https://rank-king.jp/article/23575"],
+ iso:["神奈川健一の日本酒ブログ 磯自慢 別撰 本醸造","http://www.osakemirai.com/archives/18220175.html"],
+ mb1:["マイベスト 純米大吟醸ランキング（2026年11月）","https://my-best.com/15650"],
+ mb2:["マイベスト 大吟醸ランキング（2026年11月）","https://my-best.com/19915"],
+ nm:["nomooo 人気の純米酒ランキング","https://www.nomooo.jp/article/2021/12/16/1894.html"],
+ rn:["ランキングー！ 純米酒ランキング（投票）","https://ranking.net/rankings/best-junmai-shu"],
+ kk:["価格.com 十四代・飛露喜などの販売価格","https://search.kakaku.com/%E9%A3%9B%E9%9C%B2%E5%96%9C/"],
+ rk:["ランク王 越乃寒梅のおすすめ","https://rank-king.jp/article/18891"],
+ ab:["All About 越乃寒梅のランク","https://allabout.co.jp/gm/gc/408769/"],
+ ret:["熱燗に合う日本酒ランキング2026","https://retsu-business.com/alcohol/sake/best-japanese-sake-for-atsukan-ranking/"],
+ fam:["famico 熱燗におすすめの日本酒","https://famico.jp/recommend_item-181/"],
+ sl:["Smartlog 熱燗に合う日本酒","https://smartlog.jp/152315"],
+ mbh:["マイベスト 熱燗の日本酒ランキング","https://my-best.com/4771"],
+ st:["SAKETIME 立山","https://www.saketime.jp/brands/2527/"],
+ rnh:["ランキングー！ 吟醸 八海山","https://ranking.net/items/385f17"],
+ sk:["さけのわ 日本酒人気ランキング（YouTube・2026年）","https://www.youtube.com/watch?v=uyS6hUZjbzM"]
+};
+/* 各本: [商品名, 読み, 蔵元, 県, 区分・精米, 特徴, 出典キー, SAKETIME順位, スコア, 価格] 順位0=100位圏外 */
+const C=[
+ {id:"jdg",name:"純米大吟醸",col:1,row:0,p:50,tag:"精米歩合 50%以下・アルコール添加なし",def:"米・米こうじ・水だけで、半分以上削った米を低温でじっくり発酵。日本酒好きに評価の高い銘柄がいちばん集まる分類です。",
+ items:[
+ ["十四代 中取り純米大吟醸","じゅうよんだい なかどり","高木酒造","山形県","商品ごとに違う","SAKETIME総合1位の銘柄。果実のような甘みと上品なキレ。","stk kk",1,4.62,"2〜4万円（実勢）"],
+ ["金雀 純米大吟醸","きんすずめ","堀江酒場","山口県","—","岩国の小さな蔵。上品な甘みと透明感で、近年一気に評価を上げた銘柄。","stk",4,4.52,"約5,000円（実勢）"],
+ ["宮寒梅 純米大吟醸","みやかんばい","寒梅酒造","宮城県","—","甘みと酸のバランスがよく、後味はきれい。宮城を代表する人気銘柄。","stk",8,4.46,"約2,500円"],
+ ["花陽浴 純米大吟醸","はなあび","南陽醸造","埼玉県（羽生）","—","甘く華やかな香り。埼玉の銘柄で最上位。","stk sk",10,4.44,"約6,000円（実勢）"],
+ ["写楽 純米大吟醸","しゃらく","宮泉銘醸","福島県","—","甘み・酸味・旨味の釣り合いがよい、福島の人気銘柄。","stk sk",19,4.35,"約5,000円（実勢）"],
+ ["東洋美人 一番纏 純米大吟醸","とうようびじん いちばんまとい","澄川酒造場","山口県","—","華やかで透明感のある味。東洋美人の看板商品。","stk",19,4.35,"約4,000円"],
+ ["荷札酒 純米大吟醸","にふださけ","加茂錦酒造","新潟県","—","軽やかで透明感があり、手ごろな値段の純米大吟醸として人気。","stk",29,4.31,"約2,000円"],
+ ["田酒 純米大吟醸 四割五分","でんしゅ よんわりごぶ","西田酒造店","青森県","精米45%","米の旨味を生かした、田酒の上位の1本。","stk",35,4.29,"約8,000円（実勢）"],
+ ["飛露喜 純米大吟醸","ひろき","廣木酒造本店","福島県","麹米40%・掛米50%","上品な香りと、ほのかな果実感、滑らかな旨味。","stk mb1",37,4.28,"約1万円（実勢）"],
+ ["栄光冨士 純米大吟醸 無濾過生原酒","えいこうふじ","冨士酒造","山形県","商品ごとに違う","濃いめの甘口でフルーティー。生原酒のシリーズが人気。","stk mb1",49,4.25,"約2,000円"]]},
+ {id:"jg",name:"純米吟醸",col:1,row:1,p:60,tag:"精米歩合 60%以下・アルコール添加なし",def:"香りに加えて米の旨味とコクが残ります。SAKETIME上位の蔵は、この分類を主力にしているところが多くあります。",
+ items:[
+ ["信州亀齢 純米吟醸 山恵錦","しんしゅうきれい さんけいにしき","岡崎酒造","長野県","—","SAKETIME総合3位。透明感のある甘みと酸。","stk",3,4.55,"約3,000円（実勢）"],
+ ["而今 純米吟醸","じこん","木屋正酒造","三重県","酒米ごとに違う","果実のような香りと甘酸のバランス。八反錦・山田錦などの酒米違いがある。","stk sk",5,4.48,"約5,000円（実勢）"],
+ ["花邑 純米吟醸 陸羽田","はなむら りくうでん","両関酒造","秋田県","—","十四代の高木酒造の技術指導で生まれた銘柄。","stk",13,4.39,"約3,000円（実勢）"],
+ ["川中島 幻舞 純米吟醸","かわなかじま げんぶ","酒千蔵野","長野県","—","女性杜氏が造る、華やかでやわらかい味。","stk",17,4.36,"約2,000円"],
+ ["廣戸川 純米吟醸","ひろとがわ","松崎酒造","福島県","—","穏やかな香りで食事に合う。福島の実力派。","stk",22,4.34,"約1,800円"],
+ ["よこやま SILVER 純米吟醸","よこやま しるばー","重家酒造","長崎県（壱岐）","—","華やかな香りとやさしい甘み。焼酎の島・壱岐の日本酒。","stk",25,4.33,"約2,000円"],
+ ["亀泉 純米吟醸原酒 CEL-24","かめいずみ せるにじゅうよん","亀泉酒造","高知県","—","高知の酵母でパインのような香り。甘酸っぱく度数は低め。","stk rn",27,4.32,"約1,700円"],
+ ["くどき上手 純米吟醸","くどきじょうず","亀の井酒造","山形県","—","華やかな香りが持ち味の、山形の人気銘柄。","stk sk",37,4.28,"約1,800円"],
+ ["大信州 超辛口 純米吟醸","だいしんしゅう ちょうからくち","大信州酒造","長野県","—","すっきりした辛口で、食事の相手にちょうどよい。","stk",42,4.27,"約1,800円"],
+ ["鳳凰美田 芳 純米吟醸 無濾過生酒","ほうおうびでん かんばし","小林酒造","栃木県","—","華やかな香りとすっきりした飲み口。","stk nm",59,4.23,"約1,900円"]]},
+ {id:"jm",name:"純米酒",col:1,row:2,p:null,tag:"精米歩合の決まりなし・アルコール添加なし",def:"米・米こうじ・水だけ。米の旨味がいちばん素直に出ます。特別純米もここに入れました。",
+ items:[
+ ["而今 特別純米","じこん","木屋正酒造","三重県","特別純米","而今の定番。果実感と甘酸のバランスがよく、純米でも香りが立つ。","stk sk",5,4.48,"約3,000円（実勢）"],
+ ["新政 No.6","あらまさ なんばーしっくす","新政酒造","秋田県","生酛・純米","SAKETIME総合5位。新政は特定名称をラベルに細かく書かない方針で、精米は大吟醸並みのものもある。","stk sk",5,4.48,"約5,000円（実勢）"],
+ ["みむろ杉 特別純米 辛口","みむろすぎ からくち","今西酒造","奈良県","特別純米","三輪山のふもとの蔵。すっきりした辛口。","stk",17,4.36,"約1,500円"],
+ ["赤武 AKABU 純米","あかぶ","赤武酒造","岩手県","—","若い杜氏が造る、フレッシュな甘みと酸。","stk",29,4.31,"約1,600円"],
+ ["会津宮泉 純米","あいづみやいずみ","宮泉銘醸","福島県","—","写楽の蔵の地元向け銘柄。旨味がありながら軽い。","stk",33,4.30,"約1,600円"],
+ ["田酒 特別純米酒","でんしゅ","西田酒造店","青森県","特別純米","米の旨味がしっかり。純米酒の代表格。","stk rn",35,4.29,"約3,000円（実勢）"],
+ ["飛露喜 特別純米","ひろき","廣木酒造本店","福島県","特別純米","果実のような香りと、すっきりした旨味。","stk nm",37,4.28,"約4,000円（実勢）"],
+ ["鍋島 特別純米","なべしま","富久千代酒造","佐賀県","特別純米","甘み・酸味・旨味のバランスがよい、鍋島の定番。","stk",46,4.26,"約3,000円（実勢）"],
+ ["風の森 秋津穂 657","かぜのもり あきつほ","油長酒造","奈良県","精米65%","しぼったままの生酒で、ほんのり微発泡のフレッシュさ。","stk",69,4.20,"約1,500円"],
+ ["田中六五","たなかろくじゅうご","白糸酒造","福岡県（糸島）","精米65%","地元・糸島の山田錦を65%で。穏やかで食事向き。","stk",69,4.20,"約1,600円"]]},
+ {id:"dg",name:"大吟醸",col:2,row:0,p:50,tag:"精米歩合 50%以下・アルコール添加あり",def:"純米大吟醸に、ごく少量の醸造アルコールを加えたもの。香りが立ち、すっきり軽くなります。SAKETIME上位でもこの区分の商品を持つ蔵は少なめです。",
+ items:[
+ ["十四代 黒縄 大吟醸","じゅうよんだい くろなわ","高木酒造","山形県","大吟醸","十四代の大吟醸の代表格。ほぼ通販でしか見かけない。","stk kk",1,4.62,"約3万円（実勢）"],
+ ["飛露喜 大吟醸","ひろき","廣木酒造本店","福島県","精米40%","上品な香りでさっぱりした飲み口。","stk mb2",37,4.28,"約1万円（実勢）"],
+ ["楽器正宗 大吟醸 白鼓","がっきまさむね","大木代吉本店","福島県","大吟醸","楽器正宗の大吟醸。SAKETIMEの商品一覧に並ぶ1本。","stk gk",42,4.27,"値段は要確認"],
+ ["鍋島 大吟醸","なべしま","富久千代酒造","佐賀県","精米35%","IWC2011でチャンピオン・サケを受賞した蔵の大吟醸。","stk mb2",46,4.26,"約1万円（実勢）"],
+ ["手取川 大吟醸 あらばしり","てどりがわ","吉田酒造店","石川県","精米45%","リンゴやライムのような香りと、引き締まった酸味。","stk mb2",86,4.15,"約2,500円"],
+ ["黒龍 大吟醸","こくりゅう","黒龍酒造","福井県","精米50%","辛口の香り高いタイプ。","stk mb2",94,4.14,"約3,500円"],
+ ["黒龍 龍","こくりゅう りゅう","黒龍酒造","福井県","精米40%","低温で熟成させた、パイナップルのような香り。","stk mb2",94,4.14,"約5,500円"],
+ ["〆張鶴 金ラベル","しめはりつる きんらべる","宮尾酒造","新潟県","精米35%","果実の香りとふくらみ、そしてキレ。","mb2",0,null,"約4,500円"],
+ ["北雪 大吟醸 YK35","ほくせつ わいけーさんじゅうご","北雪酒造","新潟県（佐渡）","精米35%","芳醇な香りと深みのある中辛口。","mb2",0,null,"約4,000円"],
+ ["喜多屋 大吟醸 極醸","きたや ごくじょう","喜多屋","福岡県（八女）","精米35%","IWC2013で最優秀賞。華やかで透明感のある味。","mb2",0,null,"約5,000円"]]},
+ {id:"gj",name:"吟醸",col:2,row:1,p:60,tag:"精米歩合 60%以下・アルコール添加あり",def:"香りを出しつつ、醸造アルコールで軽く仕上げたもの。SAKETIME100位までに入る銘柄では2本だけ見つかり、残りは昔からの定番で補いました。",
+ items:[
+ ["くどき上手 ばくれん 吟醸 超辛口","くどきじょうず ばくれん","亀の井酒造","山形県","吟醸","「ばくれん」は山形の言葉でおてんば娘。キレのある超辛口。","stk",37,4.28,"約1,800円"],
+ ["黒龍 吟醸 いっちょらい","こくりゅう いっちょらい","黒龍酒造","福井県","吟醸","「いっちょらい」は福井の言葉で一張羅。黒龍の定番の吟醸。","stk",94,4.14,"約1,600円"],
+ ["越乃寒梅 別撰 吟醸","こしのかんばい べっせん","石本酒造","新潟県","精米55%","淡麗辛口で魚料理に合う、越乃寒梅の中心の1本。","rk",0,null,"約1,600円"],
+ ["越乃寒梅 特選 吟醸","こしのかんばい とくせん","石本酒造","新潟県","精米50%（山田錦）","大吟醸並みに磨いた吟醸。","ab",0,null,"約2,500円"],
+ ["久保田 千寿","くぼた せんじゅ","朝日酒造","新潟県","吟醸","すっきりした上品な香味。食事と合わせる久保田の定番。","mb1",0,null,"約1,400円"],
+ ["八海山 吟醸","はっかいさん","八海醸造","新潟県","精米50%","辛口の吟醸。","rnh",0,null,"約2,000円"],
+ ["立山 吟醸","たてやま","立山酒造","富山県","—","ふくよかな旨みで後味は軽い辛口。","st",0,null,"約1,800円"],
+ ["〆張鶴 吟撰","しめはりつる ぎんせん","宮尾酒造","新潟県","吟醸","淡麗でやわらかい〆張鶴の吟醸。","",0,null,"約1,800円"],
+ ["出羽桜 桜花吟醸酒","でわざくら おうかぎんじょうしゅ","出羽桜酒造","山形県","吟醸","吟醸酒を一般に広めたとされる、山形の定番。","",0,null,"約1,800円"],
+ ["菊水 無冠帝","きくすい むかんてい","菊水酒造","新潟県","吟醸 生酒","青いびんで知られる、すっきりした吟醸生酒。","",0,null,"約1,500円"]]},
+ {id:"hj",name:"本醸造",col:2,row:2,p:70,tag:"精米歩合 70%以下・アルコール添加あり",def:"米を3割以上削り、醸造アルコールを少し加えてキレよく仕上げたもの。日本酒好きの評価が高いのは、楽器正宗や磯自慢のような「冷やしてもおいしい本醸造」です。",
+ items:[
+ ["十四代 本丸 秘伝玉返し","じゅうよんだい ほんまる ひでんたまがえし","高木酒造","山形県","特別本醸造","十四代の名を広めた1本。いまは入手困難。","stk sl",1,4.62,"1.8Lで約1万円（実勢）"],
+ ["楽器正宗 本醸造 中取り","がっきまさむね なかどり","大木代吉本店","福島県","本醸造","しぼりの中ほどのきれいな部分だけを使う。軽やかで甘みと旨味があり、アル添の印象を変えると評判。","stk gk rkg",42,4.27,"約2,300円"],
+ ["鍋島 特別本醸造","なべしま","富久千代酒造","佐賀県","特別本醸造","鍋島らしい甘みとキレを手ごろに。熱燗好きにも名前が挙がる。","stk fam",46,4.26,"約1,500円"],
+ ["磯自慢 別撰 本醸造","いそじまん べっせん","磯自慢酒造","静岡県（焼津）","精米60%（山田錦）","吟醸と同じ丁寧さで仕込む本醸造。一口目から甘くフルーティー。","stk iso",86,4.15,"約1,700円"],
+ ["八海山 特別本醸造","はっかいさん","八海醸造","新潟県","精米55%","淡麗辛口。熱燗向けの定番。","mbh sl",0,null,"約1,200円"],
+ ["久保田 百寿","くぼた ひゃくじゅ","朝日酒造","新潟県","特別本醸造","すっきりとした、お燗向きの久保田。","sl",0,null,"約1,100円"],
+ ["一ノ蔵 無鑑査本醸造 超辛口","いちのくら むかんさ ちょうからくち","一ノ蔵","宮城県","本醸造","お燗にすると辛さが映える超辛口。","sl",0,null,"約1,000円"],
+ ["華燭 あつ燗本醸","かしょく あつかんほんじょう","豊酒造","福井県","本醸造","熱燗のために造られた酒。45〜55度がおすすめ。","ret",0,null,"約1,100円"],
+ ["菊水の辛口","きくすいのからくち","菊水酒造","新潟県","本醸造","熱燗好きのアンケートで名前が挙がる辛口。","fam",0,null,"約1,000円"],
+ ["うまくち お福 特別本醸造","うまくち おふく","お福酒造","新潟県","特別本醸造","やや甘口で上品。熱燗向けとして紹介。","sl",0,null,"約1,000円"]]}
+];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const g=p=>{if(p==null)return '<i class="free" style="width:56px;height:60px"></i>';const k=Math.sqrt(p/100);return `<i style="width:${Math.round(56*k)}px;height:${Math.round(60*k)}px"></i>`};
+const rows=[["大吟醸クラス","50%以下"],["吟醸クラス","60%以下"],["ふつうの削り","純米は決まりなし／本醸造70%以下"]];
+let m='<div class="hd"></div><div class="hd">純米（アルコール添加なし）</div><div class="hd">アルコール添加あり</div>';
+rows.forEach((r,i)=>{m+=`<div class="rowh"><b>${r[0]}</b>${r[1]}</div>`;[1,2].forEach(c=>{const x=C.find(o=>o.row===i&&o.col===c);m+=`<a class="cell" href="#${x.id}"><span class="grain">${g(x.p)}</span><span><h3>${x.name}</h3><p>${esc(x.tag.replace("・","／"))}</p></span></a>`})});
+document.getElementById("map").innerHTML=m;
+document.getElementById("chips").innerHTML=C.map(c=>`<a href="#${c.id}">${c.name}</a>`).join("");
+document.getElementById("secs").innerHTML=C.map(c=>`<section class="band" id="${c.id}"><div class="wrap"><div class="sec-h"><h2>${c.name}</h2><span class="tag">${esc(c.tag)}</span><p class="def">${esc(c.def)}</p></div><div class="grid">${c.items.map((t,i)=>`<article class="card${t[7]?"":" gen"}"><span class="n">${i+1}</span><p class="yomi">${esc(t[1])}</p><h4>${esc(t[0])}</h4><p class="kura">${esc(t[2])}（${esc(t[3])}）</p><p class="rank">${t[7]?`SAKETIME ${t[7]}位<b>${t[8].toFixed(2)}</b>`:"SAKETIME 100位圏外"}</p><p class="pr"><span class="price">${esc(t[9])}</span>${t[4]!=="—"?`<span class="spec">${esc(t[4])}</span>`:""}</p><p class="txt">${esc(t[5])}</p><p class="src">${t[6]?"出典: "+t[6].split(" ").map(k=>esc(S[k][0])).join("／"):"一般によく知られた銘柄（区分はラベルで確認）"}</p></article>`).join("")}</div></div></section>`).join("");
+document.getElementById("srcs").innerHTML=Object.values(S).map(s=>`<li><a href="${esc(s[1])}">${esc(s[0])}</a></li>`).join("");
+}
+</script>
+
+</body>
+</html>
