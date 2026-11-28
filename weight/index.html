@@ -120,6 +120,41 @@ button:focus-visible { outline: 2px solid var(--poko); outline-offset: 2px; }
 .stat .g span, .stat .d span { white-space: nowrap; } /* 意味の切れ目でだけ折り返す */
 .stat .g b { font-size: .95rem; color: var(--fg); }
 .stat .g.done b { color: var(--ok); }
+/* スタンプ: 体重の横の丸＝その人の気分、右上の小さい丸＝相手からの反応（メッセージのリアクションのように重ねる） */
+.vrow { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 2px; }
+.stamp-btn { position: relative; flex: none; width: 40px; height: 40px; margin-top: 6px; border-radius: 50%; border: 1.5px dashed var(--muted); background: var(--surface); display: grid; place-items: center; padding: 0; font-size: 1.4rem; line-height: 1; color: var(--muted); -webkit-tap-highlight-color: transparent; }
+.stamp-btn.has { border: none; box-shadow: 0 1px 4px rgba(0, 0, 0, .18); }
+.stamp-btn .plus { font-family: var(--font-display); font-size: .66rem; font-weight: 700; }
+.stamp-btn .re { position: absolute; right: -9px; top: -9px; width: 24px; height: 24px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 4px rgba(0, 0, 0, .25); display: grid; place-items: center; font-size: .85rem; }
+.stat .best { font-size: .74rem; font-weight: 700; color: var(--ok); line-height: 1.35; }
+.btn-stamp { flex: none; padding: 8px 12px; white-space: nowrap; border: 1px solid var(--line); background: transparent; color: var(--fg); font-size: .9rem; }
+td .hs { margin-left: 4px; font-size: .95rem; }
+td .hs i { font-style: normal; font-size: .72rem; vertical-align: super; }
+dialog#stamp { margin: auto; width: calc(100% - 32px); max-width: 420px; border-radius: 16px; overflow: hidden; }
+.st-body { padding: 4px 16px 16px; }
+.st-sec h3 { font-size: .8rem; color: var(--muted); margin: 10px 0 6px; font-weight: 700; }
+.st-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)); gap: 6px; }
+.st-grid button { border: 1px solid var(--line); background: var(--bg); padding: 6px 2px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--fg); }
+.st-grid button .e { font-size: 1.6rem; line-height: 1.15; }
+.st-grid button .t { font-size: .68rem; white-space: nowrap; }
+.st-grid button[aria-pressed="true"] { border: 2px solid var(--fg); background: var(--surface); font-weight: 700; }
+.st-grid button:disabled { opacity: .45; cursor: default; }
+.st-msg { font-size: .8rem; min-height: 1.3em; margin: 8px 0 0; color: var(--danger); }
+/* 最低記録のお祝い */
+.cele { position: relative; text-align: center; padding: 14px 16px 10px; background: linear-gradient(135deg, var(--ori-soft), var(--poko-soft)); overflow: hidden; }
+.cele .big { font-size: 2.6rem; line-height: 1.1; }
+.cele .ttl { margin: 4px 0 0; font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; }
+.cele .sub { margin: 4px 0 0; font-size: .92rem; }
+.cele .sub b { font-size: 1.1rem; }
+.cele small { display: block; margin-top: 4px; color: var(--muted); font-size: .78rem; }
+.cele .cf { position: absolute; top: -14px; width: 7px; height: 12px; border-radius: 2px; opacity: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .cele .cf { animation: fall 2.2s ease-in forwards; }
+  .cele .big { animation: pop .6s ease-out; }
+}
+@keyframes fall { 0% { opacity: 1; transform: translateY(0) rotate(0); } 100% { opacity: 0; transform: translateY(190px) rotate(600deg); } }
+@keyframes pop { 0% { transform: scale(.3); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
+header h1 .ver { font-family: var(--font-body); font-size: .62rem; font-weight: 400; color: var(--muted); margin-left: 4px; letter-spacing: 0; }
 #chart { width: 100%; flex: 1 1 auto; min-height: 120px; position: relative; }
 #chart svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 #chart .pt { cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -170,7 +205,7 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
 
 <div class="wrap">
   <header>
-    <h1>ふたりの体重記録</h1>
+    <h1>ふたりの体重記録<span class="ver">v9</span></h1>
     <button type="button" class="btn-hist" id="open-hist">履歴</button>
   </header>
 
@@ -204,6 +239,7 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
       </div>
       <div class="actions">
         <button type="submit" class="btn-main" id="save">記録する</button>
+        <button type="button" class="btn-stamp" id="stamp-open" hidden>スタンプ</button>
         <button type="button" class="btn-del" id="del" hidden>消す</button>
       </div>
       <div class="status" id="status" aria-live="polite"></div>
@@ -247,6 +283,18 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
   </form>
 </dialog>
 
+<dialog id="stamp" class="sheet" aria-labelledby="h-stamp">
+  <div class="cele" id="cele" hidden></div>
+  <div class="hist-head">
+    <h2 id="h-stamp">スタンプ</h2>
+    <button type="button" class="btn-close" id="close-stamp">閉じる</button>
+  </div>
+  <div class="st-body">
+    <div id="st-secs"></div>
+    <p class="st-msg" id="st-msg" aria-live="polite"></p>
+  </div>
+</dialog>
+
 <script>
 (function () {
   const PEOPLE = [
@@ -272,6 +320,25 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
   const bmi = (w, k) => { const h = num(heights[k]); return h ? w / ((h / 100) * (h / 100)) : null; };
   const nameOf = (k) => PEOPLE.find((p) => p.key === k).name;
   const colorOf = (k) => PEOPLE.find((p) => p.key === k).color;
+  const other = (k) => (k === "orishi" ? "pokoshi" : "orishi");
+
+  // スタンプ（名前はスプレッドシートの「スタンプ」シートにそのまま残る。Apps Script の MOODS・REACTS と同じにする）
+  const MOODS = [{ k: "いい感じ", e: "😆" }, { k: "うれしい", e: "😊" }, { k: "ふつう", e: "😐" }, { k: "残念", e: "😢" }, { k: "やばい", e: "😱" }];
+  const REACTS = [{ k: "ナイス", e: "👏" }, { k: "がんばれ", e: "💪" }, { k: "おめでとう", e: "🎉" }, { k: "どんまい", e: "🥺" }, { k: "いいね", e: "❤️" }, { k: "わらう", e: "😂" }];
+  const emo = (list, k) => { const x = list.find((m) => m.k === k); return x ? x.e : ""; };
+  const stamps = new Map(); // "日付|人" -> {mood, react}
+  let stampOk = false; // 保存先がスタンプに対応しているか（Apps Script を更新済みか）
+  const sk = (d, k) => d + "|" + k;
+  const stampOf = (d, k) => stamps.get(sk(d, k)) || {};
+
+  // その日の体重が、ほかのどの日の記録よりも軽いか（記録をはじめてからの最低記録）
+  function lowInfo(k, date) {
+    const r = rows.get(date), v = r ? num(r[k]) : null;
+    if (v == null) return null;
+    let prev = null;
+    rows.forEach((x, d) => { if (d === date) return; const u = num(x[k]); if (u != null && (prev == null || u < prev)) prev = u; });
+    return prev != null && v < prev ? { v: v, prev: prev } : null;
+  }
 
   function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
   function recall(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -297,6 +364,9 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
     if (!keepWeight) $("weight").value = v != null ? fmt(v) : "";
     $("save").textContent = v != null ? "上書き保存" : "記録する";
     $("del").hidden = v == null || !ready;
+    const mo = v != null ? emo(MOODS, stampOf($("date").value, who()).mood) : "";
+    $("stamp-open").hidden = v == null || !ready;
+    $("stamp-open").textContent = mo ? mo + " スタンプ" : "スタンプ";
     disarmDel();
     $("save").disabled = !ready || busy;
     document.querySelectorAll("#rows tr").forEach((tr) => tr.classList.toggle("sel", tr.dataset.date === $("date").value));
@@ -309,6 +379,7 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
   }
   document.querySelectorAll('input[name="who"]').forEach((el) => el.addEventListener("change", () => selectWho(who())));
   $("stats").addEventListener("click", (e) => {
+    const sb = e.target.closest(".stamp-btn"); if (sb) { openStamp(sb.dataset.stamp, sb.dataset.date); return; }
     const gb = e.target.closest(".goal-btn"); if (gb) { openGoal(gb.dataset.goal); return; }
     const t = e.target.closest(".stat[data-who]"); if (t) selectWho(t.dataset.who);
   });
@@ -354,6 +425,7 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
   $("goal-del").addEventListener("click", () => saveGoal(null, null));
   $("stats").addEventListener("keydown", (e) => {
     if (e.key !== "Enter" && e.key !== " ") return;
+    if (e.target.closest("button")) return; // 枠の中のボタン（目標・スタンプ）はボタンとして押す
     const t = e.target.closest(".stat[data-who]"); if (!t) return;
     e.preventDefault(); selectWho(t.dataset.who);
   });
@@ -371,12 +443,92 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
     try {
       apply(await call({ action: "set", date: date, who: k, weight: w }));
       setStatus(nameOf(k) + "の " + label(date) + " を " + fmt(w) + "kg で保存しました。", "ok");
+      // 保存したら、その日の気分スタンプを選ぶ画面を出す（最低記録ならお祝いもいっしょに）
+      const low = lowInfo(k, date);
+      if (low) markCele(k, date);
+      openStamp(k, date, { cele: !!low });
     } catch (err) {
       handleWriteError(err);
     } finally {
       busy = false; syncForm(true);
+      if ($("stamp").open) renderStampGrids(); // 保存中は押せなかったスタンプを押せるようにする
     }
   });
+
+  // ---- スタンプの画面 ----
+  let stWho = null, stDate = null, stReactFirst = false;
+  const CHEERS = ["この調子です！", "コツコツ続けた成果です。", "すばらしい！", "ふたりでお祝いしましょう。"];
+  function openStamp(k, date, opts) {
+    opts = opts || {};
+    stWho = k; stDate = date; stReactFirst = !!opts.partner;
+    const r = rows.get(date), v = r ? num(r[k]) : null;
+    $("h-stamp").textContent = label(date) + " " + nameOf(k) + (v != null ? " " + fmt(v) + "kg" : "");
+    $("h-stamp").style.color = colorOf(k);
+    const low = opts.cele ? lowInfo(k, date) : null, c = $("cele");
+    if (low) {
+      let cf = "";
+      const cols = ["var(--ori)", "var(--poko)", "#F2B33D", "var(--ok)"];
+      for (let i = 0; i < 26; i++) cf += '<span class="cf" style="left:' + (Math.random() * 96).toFixed(1) + "%;background:" + cols[i % cols.length] + ";animation-delay:" + (Math.random() * 0.7).toFixed(2) + "s;animation-duration:" + (1.6 + Math.random() * 1.2).toFixed(2) + 's"></span>';
+      c.innerHTML = cf + '<div class="big" aria-hidden="true">🎉</div>'
+        + '<p class="ttl">' + (opts.partner ? nameOf(k) + "が最低記録を更新！" : "おめでとう！最低記録を更新！") + "</p>"
+        + '<p class="sub">記録をはじめてから、いちばん軽い <b>' + fmt(low.v) + "kg</b></p>"
+        + "<small>これまでの最低 " + fmt(low.prev) + "kg から −" + (low.prev - low.v).toFixed(1) + "kg。" + (opts.partner ? "おめでとうを送りましょう。" : CHEERS[Math.floor(Math.random() * CHEERS.length)]) + "</small>";
+      c.hidden = false;
+    } else { c.hidden = true; c.innerHTML = ""; }
+    renderStampGrids();
+    $("st-msg").textContent = !ready ? "記録につながってから押せます。" : stampOk ? "" : "スタンプを保存するには、保存先（Apps Script）の更新が必要です。ぽこしに伝えてください。";
+    if (!$("stamp").open) $("stamp").showModal();
+  }
+  function renderStampGrids() {
+    const st = stampOf(stDate, stWho), off = !ready || !stampOk || busy ? " disabled" : "";
+    const sec = (field, list, title, cur) => '<div class="st-sec"><h3>' + title + '</h3><div class="st-grid">'
+      + list.map((m) => '<button type="button" data-field="' + field + '" data-val="' + m.k + '" aria-pressed="' + (cur === m.k) + '"' + off + '><span class="e" aria-hidden="true">' + m.e + '</span><span class="t">' + m.k + "</span></button>").join("")
+      + "</div></div>";
+    const a = sec("mood", MOODS, nameOf(stWho) + "の気分", st.mood);
+    const b = sec("react", REACTS, nameOf(other(stWho)) + "から反応を送る", st.react);
+    $("st-secs").innerHTML = stReactFirst ? b + a : a + b;
+  }
+  $("close-stamp").addEventListener("click", () => $("stamp").close());
+  $("stamp").addEventListener("click", (e) => { if (e.target === $("stamp")) $("stamp").close(); });
+  $("stamp-open").addEventListener("click", () => openStamp(who(), $("date").value));
+  $("st-secs").addEventListener("click", async (e) => {
+    const b = e.target.closest("button[data-field]");
+    if (!b || b.disabled || !ready || busy) return;
+    const field = b.dataset.field, key = sk(stDate, stWho), before = stampOf(stDate, stWho);
+    const val = before[field] === b.dataset.val ? null : b.dataset.val; // 選んであるものをもう一度押すと外す
+    const after = Object.assign({}, before); after[field] = val;
+    stamps.set(key, after); // 先に見た目だけ変える
+    busy = true; renderStampGrids(); $("st-msg").textContent = "";
+    try {
+      const res = await call({ action: "stamp", date: stDate, who: stWho, field: field, value: val });
+      if (!res.stamps) throw Object.assign(new Error("old"), { code: "old_script" });
+      apply(res);
+      const e2 = emo(field === "mood" ? MOODS : REACTS, val);
+      setStatus(val == null ? "スタンプを外しました。" : field === "mood" ? nameOf(stWho) + "の気分を " + e2 + " にしました。" : nameOf(stWho) + "に " + e2 + " を送りました。", "ok");
+      $("stamp").close();
+    } catch (err) {
+      stamps.set(key, before);
+      $("st-msg").textContent = err && (err.code === "old_script" || err.code === "bad_request")
+        ? "スタンプを保存できませんでした。保存先（Apps Script）の更新がまだのようです。ぽこしに伝えてください。"
+        : "保存できませんでした。通信状態を確かめて、もう一度押してください。";
+    } finally { busy = false; renderStampGrids(); syncForm(true); }
+  });
+
+  // 最低記録のお祝いを、この端末で出したかを覚えておく（同じお祝いを何度も出さない）
+  function seenCele() { try { const a = JSON.parse(recall("cele") || "[]"); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  function markCele(k, d) { const a = seenCele(); if (!a.includes(sk(d, k))) a.push(sk(d, k)); store("cele", JSON.stringify(a.slice(-60))); }
+  // 相手（またはほかの端末で記録した自分）が最低記録を出していたら、開いたときにお祝いする（3日以内の記録だけ）
+  function checkCele() {
+    if (document.querySelector("dialog[open]")) return;
+    const seen = seenCele(), today = new Date(); today.setHours(0, 0, 0, 0);
+    for (const p of PEOPLE) {
+      const ds = sortedDates().filter((d) => num(rows.get(d)[p.key]) != null), d = ds[ds.length - 1];
+      if (!d || (today.getTime() - parse(d).getTime()) / 86400000 > 3 || seen.includes(sk(d, p.key)) || !lowInfo(p.key, d)) continue;
+      markCele(p.key, d);
+      openStamp(p.key, d, { cele: true, partner: p.key !== who() });
+      return;
+    }
+  }
 
   function disarmDel() { clearTimeout(delTimer); const b = $("del"); b.classList.remove("armed"); b.textContent = "消す"; }
   $("del").addEventListener("click", async () => {
@@ -446,8 +598,11 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
       let ds = "この期間の記録なし";
       if (pts.length > 1) { const diff = pts[pts.length - 1][1] - pts[0][1]; ds = (diff > 0 ? "+" : diff < 0 ? "−" : "±") + Math.abs(diff).toFixed(1) + "kg"; }
       else if (pts.length === 1) ds = "記録1件";
-      const b = bmi(latest[1], p.key);
-      return open + '<div class="v">' + fmt(latest[1]) + '<small> kg</small></div><div class="d">' + (b != null ? '<span class="bmi">BMI ' + fmt(b) + "</span> " : "") + "<span>" + md(latest[0]) + " " + ds + "</span></div>" + gl + "</div>";
+      const b = bmi(latest[1], p.key), st = stampOf(latest[0], p.key);
+      const sbtn = '<button type="button" class="stamp-btn' + (st.mood ? " has" : "") + '" data-stamp="' + p.key + '" data-date="' + latest[0] + '" aria-label="' + p.name + "の" + md(latest[0]) + "のスタンプ" + (st.mood ? "（気分: " + st.mood + "）" : "") + (st.react ? "（" + nameOf(other(p.key)) + "から: " + st.react + "）" : "") + '">'
+        + (st.mood ? emo(MOODS, st.mood) : '<span class="plus">気分</span>') + (st.react ? '<span class="re">' + emo(REACTS, st.react) + "</span>" : "") + "</button>";
+      const best = lowInfo(p.key, latest[0]) ? '<div class="best">🏆 最低記録を更新！</div>' : "";
+      return open + '<div class="vrow"><div class="v">' + fmt(latest[1]) + "<small> kg</small></div>" + sbtn + "</div>" + best + '<div class="d">' + (b != null ? '<span class="bmi">BMI ' + fmt(b) + "</span> " : "") + "<span>" + md(latest[0]) + " " + ds + "</span></div>" + gl + "</div>";
     }).join("");
   }
 
@@ -550,7 +705,9 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
     if (!dates.length) { body.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);cursor:default">' + (loaded ? "まだ記録がありません" : "読み込み中…") + "</td></tr>"; $("more").hidden = true; return; }
     body.innerHTML = dates.slice(0, listLimit).map((d) => {
       const r = rows.get(d);
-      const cell = (k) => { const v = num(r[k]); if (v == null) return '<td class="none">—</td>'; const b = bmi(v, k); return "<td>" + fmt(v) + (b != null ? '<span class="b">BMI ' + fmt(b) + "</span>" : "") + "</td>"; };
+      const cell = (k) => { const v = num(r[k]); if (v == null) return '<td class="none">—</td>'; const b = bmi(v, k), st = stampOf(d, k);
+        const hs = st.mood || st.react ? '<span class="hs">' + emo(MOODS, st.mood) + (st.react ? "<i>" + emo(REACTS, st.react) + "</i>" : "") + "</span>" : "";
+        return "<td>" + fmt(v) + hs + (b != null ? '<span class="b">BMI ' + fmt(b) + "</span>" : "") + "</td>"; };
       return '<tr data-date="' + d + '"' + (d === $("date").value ? ' class="sel"' : "") + "><td>" + fullLabel(d) + "</td>" + cell("orishi") + cell("pokoshi") + "</tr>";
     }).join("");
     $("more").hidden = dates.length <= listLimit;
@@ -628,6 +785,7 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
   function apply(data) {
     const list = Array.isArray(data) ? data : data.rows;
     if (data && data.goals) { goals = data.goals; store("goals", JSON.stringify(goals)); }
+    if (data && Array.isArray(data.stamps)) { stampOk = true; setStamps(data.stamps); store("stamps", JSON.stringify(data.stamps)); }
     rows.clear();
     list.forEach((r) => {
       if (r && /^\d{4}-\d{2}-\d{2}$/.test(r.date) && (num(r.orishi) != null || num(r.pokoshi) != null)) rows.set(r.date, r);
@@ -637,6 +795,15 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
     renderAll();
   }
 
+  function setStamps(list) {
+    stamps.clear();
+    list.forEach((s) => {
+      if (!s || !/^\d{4}-\d{2}-\d{2}$/.test(s.date) || !PEOPLE.some((p) => p.key === s.who)) return;
+      const mood = emo(MOODS, s.mood) ? s.mood : null, react = emo(REACTS, s.react) ? s.react : null;
+      if (mood || react) stamps.set(sk(s.date, s.who), { mood: mood, react: react });
+    });
+  }
+
   async function load() {
     if (!cfg || busy) return;
     try {
@@ -644,6 +811,8 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
       if (busy) return; // 読み込み中に保存した場合は、保存の結果を優先する
       ready = true; notice("");
       apply(list);
+      if ($("stamp").open) renderStampGrids();
+      checkCele();
     } catch (err) {
       if (err && err.code === "auth") { ready = false; notice("記録につながりませんでした。設定リンクが古いようです。ぽこしから新しい設定リンクをもらって開き直してください。", true); }
       else notice("記録を読み込めませんでした。通信状態を確かめて、開き直してください。" + (rows.size ? "（下はこの端末に残っている前回の記録です）" : ""), true);
@@ -661,6 +830,7 @@ td .b { display: block; font-size: .72rem; line-height: 1.2; color: var(--muted)
     renderAll();
   } else {
     try { const g = JSON.parse(recall("goals") || "null"); if (g && typeof g === "object") goals = g; } catch (e) {}
+    try { const s = JSON.parse(recall("stamps") || "null"); if (Array.isArray(s)) setStamps(s); } catch (e) {}
     try { const cached = JSON.parse(recall("rows") || "null"); if (Array.isArray(cached)) apply(cached); } catch (e) {}
     load();
     // アプリに戻ってきたときと、開いたままのときは2分ごとに、相手の記録を読み直す
