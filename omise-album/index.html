@@ -168,7 +168,10 @@ textarea.inp{min-height:70px;resize:vertical}
   <div class="box"><b>バックアップを読み込む</b><br>書き出したファイルから記録を戻します。今ある記録は消えず、同じ記録は重なりません。
     <div style="margin-top:10px"><button class="btn2" id="impBtn" style="width:100%">ファイルを選ぶ</button></div>
     <input type="file" id="impFile" accept=".json,application/json" hidden></div>
-  <div class="box" style="font-size:14px;color:var(--sub)">記録はこのiPhoneのブラウザの中だけに保存され、外には送られません。iPhoneを替えるときやSafariのデータを消すときは、先にバックアップを書き出してください。</div>
+  <div class="box"><b>スプレッドシートに控えを送る</b><br><span id="syncStat"></span>
+    <div id="syncSet" style="margin-top:10px"><input class="inp" id="syncLink" placeholder="設定リンクを貼り付け" autocomplete="off">
+      <div style="margin-top:8px"><button class="btn2" id="syncBtn" style="width:100%">設定する</button></div></div></div>
+  <div class="box" style="font-size:14px;color:var(--sub)">写真はこのiPhoneのブラウザの中だけに保存され、外には送られません。スプレッドシートに送るのは日付・店名・一緒に行った人・食べたもの・星・メモだけです。iPhoneを替えるときやSafariのデータを消すときは、先にバックアップを書き出してください。</div>
 </section>
 
 <button class="fab" id="fab" aria-label="記録する">＋</button>
@@ -195,6 +198,31 @@ function tx(mode,fn){return new Promise((ok,ng)=>{const t=db.transaction('visits
 const dbAll=()=>tx('readonly',s=>s.getAll());
 const dbPut=v=>tx('readwrite',s=>s.put(v));
 const dbDel=id=>tx('readwrite',s=>s.delete(id));
+
+/* ===== スプレッドシートへの控え（2026-11-28 追加。写真は送らない） =====
+   設定リンク（URLの後ろの #c=保存先ID.合言葉）で一度開くと、以後は保存・削除のたびに文字の記録だけを送る。
+   送れなかった分は端末に残し、次に開いたときにまとめて送り直す。 */
+const LS_CFG='oaSyncCfg',LS_Q='oaSyncQueue',LS_ALL='oaSyncedAll';
+let syncCfg=null;
+(function(){const m=location.hash.match(/c=([^.&]+)\.([^&]+)/);
+  try{if(m){syncCfg={id:m[1],k:decodeURIComponent(m[2])};localStorage.setItem(LS_CFG,JSON.stringify(syncCfg));history.replaceState(null,'',location.pathname)}
+  else syncCfg=JSON.parse(localStorage.getItem(LS_CFG)||'null')}catch(e){syncCfg=null}})();
+function qGet(){try{return JSON.parse(localStorage.getItem(LS_Q)||'{}')}catch(e){return{}}}
+function qSet(q){try{localStorage.setItem(LS_Q,JSON.stringify(q))}catch(e){}}
+const plain=v=>({id:v.id,date:v.date,shop:v.shop,people:v.people||[],food:v.food||'',stars:v.stars||0,note:v.note||'',photos:(v.photos||[]).length});
+function syncPut(v){if(!syncCfg)return;const q=qGet();q[v.id]={a:'put',v:plain(v)};qSet(q);flushSync()}
+function syncDel(id){if(!syncCfg)return;const q=qGet();q[id]={a:'del',id};qSet(q);flushSync()}
+let flushing=false;
+async function flushSync(){if(!syncCfg||flushing)return;flushing=true;
+  try{const url='https://script.google.com/macros/s/'+syncCfg.id+'/exec';
+    const post=b=>fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({k:syncCfg.k,...b})}).then(r=>r.json()).then(j=>{if(!j.ok)throw new Error(j.error)});
+    const q=qGet(),ids=Object.keys(q);
+    const puts=ids.filter(i=>q[i].a==='put');
+    for(let i=0;i<puts.length;i+=30){await post({a:'put',vs:puts.slice(i,i+30).map(x=>q[x].v)})}
+    for(const i of ids.filter(i=>q[i].a==='del'))await post(q[i]);
+    const now=qGet();for(const i of ids)if(JSON.stringify(now[i])===JSON.stringify(q[i]))delete now[i];qSet(now)}
+  catch(e){/* 電波が悪いときなど。次に開いたときに送り直す */}
+  finally{flushing=false}}
 
 /* ===== 小道具 ===== */
 const $=id=>document.getElementById(id);
@@ -292,7 +320,7 @@ $('editBtn').onclick=()=>{startEdit(curId)};
 $('toShopBtn').onclick=()=>{const v=visits.find(x=>x.id===curId);curShop=v.shop;renderShop();show('shop')};
 $('delBtn').onclick=()=>{$('mText').textContent='この記録を削除しますか？（写真も消えます）';$('modal').classList.add('on')};
 $('mNo').onclick=()=>$('modal').classList.remove('on');
-$('mYes').onclick=async()=>{$('modal').classList.remove('on');await dbDel(curId);await reload();toast('削除しました');history.back()};
+$('mYes').onclick=async()=>{$('modal').classList.remove('on');await dbDel(curId);syncDel(curId);await reload();toast('削除しました');history.back()};
 
 /* ===== 記録・編集 ===== */
 let ed=null; // {id, photos:[{blob,thumb}], people:Set, stars}
@@ -345,12 +373,19 @@ $('saveBtn').onclick=async()=>{addPerson();const shop=$('shop').value.trim();if(
   const v={id:ed.id||uid(),created:ed.created||new Date().toISOString(),updated:new Date().toISOString(),
     date:$('date').value||today(),shop:known?known.name:shop,photos:ed.photos.map(p=>p.blob),thumbs:ed.photos.map(p=>p.thumb),
     people:[...ed.people],food:$('food').value.trim(),stars:ed.stars,note:$('note').value.trim()};
-  await dbPut(v);await reload();toast(ed.id?'直しました':'保存しました');
+  await dbPut(v);syncPut(v);await reload();toast(ed.id?'直しました':'保存しました');
   if(ed.id){curId=v.id;history.back()}else{history.back()}};
 
 /* ===== 設定・バックアップ ===== */
 function renderSettings(){const n=visits.length,s=knownShops().length,p=visits.reduce((a,v)=>a+v.photos.length,0);
-  $('stat').innerHTML=`記録 <b>${n}件</b>・お店 <b>${s}軒</b>・写真 <b>${p}枚</b>`}
+  $('stat').innerHTML=`記録 <b>${n}件</b>・お店 <b>${s}軒</b>・写真 <b>${p}枚</b>`;
+  const w=Object.keys(qGet()).length;
+  $('syncStat').textContent=syncCfg?(w?`設定ずみ。まだ送れていない記録が${w}件あります（電波のよいときに開くと送ります）。`:'設定ずみ。保存・削除のたびに送っています。'):'まだ設定していません。Claudeから受け取った設定リンクを貼り付けてください。';
+  $('syncSet').hidden=!!syncCfg}
+$('syncBtn').onclick=()=>{const m=$('syncLink').value.match(/c=([^.&\s]+)\.([^&\s]+)/);if(!m){toast('設定リンクの形ではありません');return}
+  syncCfg={id:m[1],k:decodeURIComponent(m[2])};try{localStorage.setItem(LS_CFG,JSON.stringify(syncCfg));localStorage.removeItem(LS_ALL)}catch(e){}
+  const q=qGet();for(const v of visits)if(!q[v.id])q[v.id]={a:'put',v:plain(v)};qSet(q);try{localStorage.setItem(LS_ALL,'1')}catch(e){}
+  $('syncLink').value='';toast('設定しました。今までの記録を送ります');flushSync().then(renderSettings);renderSettings()};
 $('toSettings').onclick=()=>{renderSettings();show('settings')};
 const b2d=b=>new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.readAsDataURL(b)});
 const d2b=async d=>(await fetch(d)).blob();
@@ -371,7 +406,10 @@ $('fab').onclick=startNew;
 
 /* ===== 起動 ===== */
 (async()=>{db=await openDB();if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
-  await reload();history.replaceState({v:'home'},'');renderHome()})();
+  await reload();history.replaceState({v:'home'},'');renderHome();
+  // 設定してはじめて開いたときは、今までの記録もまとめて送る
+  if(syncCfg){try{if(!localStorage.getItem(LS_ALL)){const q=qGet();for(const v of visits)if(!q[v.id])q[v.id]={a:'put',v:plain(v)};qSet(q);localStorage.setItem(LS_ALL,'1')}}catch(e){}
+    flushSync()}})();
 </script>
 </body>
 </html>
